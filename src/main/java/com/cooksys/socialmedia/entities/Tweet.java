@@ -15,6 +15,7 @@ import jakarta.persistence.OneToMany;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.cooksys.socialmedia.entities.User;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @NoArgsConstructor
@@ -29,6 +30,7 @@ public class Tweet {
     @JoinColumn
     private User author;
 
+    @CreationTimestamp
     private Timestamp posted;
 
     private boolean deleted;
@@ -48,7 +50,7 @@ public class Tweet {
         inverseJoinColumns = @JoinColumn(name = "user_id"))
     private List<User> mentionedUsers;
 
-    @ManyToMany(mappedBy = "likes")
+    @ManyToMany(mappedBy = "userLikes")
     private Set<User> likedBy;
     
     @ManyToMany
@@ -57,6 +59,6 @@ public class Tweet {
             joinColumns = @JoinColumn(name = "tweet_id"),
             inverseJoinColumns = @JoinColumn(name = "hashtag_id")
     )
-    private Set<Hashtag> hashtags;
+    private List<Hashtag> hashtags;
 
 }

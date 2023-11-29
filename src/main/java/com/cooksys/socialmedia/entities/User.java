@@ -37,10 +37,10 @@ public class User {
             joinColumns = @JoinColumn(name = "follower_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "following_id", referencedColumnName = "id")
     )
-    private Set<User> followers;
+    private List<User> followers;
 
     @ManyToMany(mappedBy = "followers")
-    private Set<User> following;
+    private List<User> following;
 
     @OneToMany(mappedBy = "author")
     private List<Tweet> tweets;
@@ -70,5 +70,5 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "tweet_id")
     )
-    private Set<Tweet> likes;
+    private List<Tweet> userLikes;
 }

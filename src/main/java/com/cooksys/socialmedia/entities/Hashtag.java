@@ -1,34 +1,34 @@
 package com.cooksys.socialmedia.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "hashtag_table")
 @NoArgsConstructor
 @Data
 public class Hashtag {
 
     @Id
+    @GeneratedValue
     private Long id;
 
     private String label;
 
+    @CreationTimestamp
     private Timestamp firstUsed;
 
+    @UpdateTimestamp
     private Timestamp lastUsed;
     
     @ManyToMany(mappedBy = "hashtags")
-    private Set<Tweet> tweets;
+    private List<Tweet> tweets;
 
 
 }
