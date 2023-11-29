@@ -1,15 +1,16 @@
-package com.cooksys.socialmedia.model;
+package com.cooksys.socialmedia.dtos;
 
+import java.sql.Timestamp;
+import com.cooksys.socialmedia.entities.Tweet;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.sql.Timestamp;
 import com.cooksys.socialmedia.entities.User;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class SimpleTweetResponseDto {
+public class RepostTweetResponseDto {
 
     private Long id;
     
@@ -17,5 +18,5 @@ public class SimpleTweetResponseDto {
     
     private Timestamp posted;
     
-    private String content;
+    private Tweet repostOf;
 }
