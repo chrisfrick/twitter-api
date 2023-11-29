@@ -1,5 +1,6 @@
 package com.cooksys.socialmedia.model;
 
+import com.cooksys.socialmedia.entities.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
