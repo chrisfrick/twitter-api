@@ -46,5 +46,10 @@ public class TweetController {
         return tweetService.deleteTweet(id);
     }
     
+    @GetMapping("/{id}")
+    public TweetResponseDto getTweetById(@PathVariable Long id) {
+        return tweetService.getTweetById(id);
+    }
+    
 
 }
