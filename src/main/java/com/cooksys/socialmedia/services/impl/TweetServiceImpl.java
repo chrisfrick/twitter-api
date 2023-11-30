@@ -54,7 +54,7 @@ public class TweetServiceImpl implements TweetService {
         List<User> mentionedUsers = new ArrayList<>();
 
         for (String username : mentionedUsernames) {
-            Optional<User> optionalMentionedUser = userRepository.findByCredentials_UsernameAndDeletedFalse(username);
+            Optional<User> optionalMentionedUser = userRepository.findByDeletedFalseAndCredentials_UsernameIgnoreCase(username);
 
             if (optionalMentionedUser.isPresent()) {
                 mentionedUsers.add(optionalMentionedUser.get());
