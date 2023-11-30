@@ -138,4 +138,17 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entitiesToResponseDtos(notDeletedReposts);
     }
 
+
+    @Override
+    public TweetResponseDto deleteTweet(Long id) {
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        Tweet tweetToDelete = optionalTweet.get();
+        
+        tweetToDelete.setDeleted(true);
+        
+        return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(tweetToDelete));
+        
+        
+    }
+
 }
