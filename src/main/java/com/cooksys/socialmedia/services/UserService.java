@@ -10,4 +10,6 @@ public interface UserService {
     List<UserResponseDto> getAllUsers();
 
     UserResponseDto updateUser(String username, CredentialsDto credentialsDto, ProfileDto profileDto);
+
+    UserResponseDto deleteUser(String username, CredentialsDto credentialsDto);
 }
