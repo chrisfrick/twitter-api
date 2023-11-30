@@ -1,5 +1,13 @@
 package com.cooksys.socialmedia.services.impl;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.springframework.stereotype.Service;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
 import com.cooksys.socialmedia.dtos.TweetResponseDto;
 import com.cooksys.socialmedia.entities.Credentials;
@@ -16,26 +24,27 @@ import com.cooksys.socialmedia.repositories.TweetRepository;
 import com.cooksys.socialmedia.repositories.UserRepository;
 import com.cooksys.socialmedia.services.TweetService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class TweetServiceImpl implements TweetService {
 
     private final TweetMapper tweetMapper;
-    private final CredentialsMapper credentialsMapper;
 
     private final TweetRepository tweetRepository;
+    
+    private final CredentialsMapper credentialsMapper;
+
     private final UserRepository userRepository;
     private final HashtagRepository hashtagRepository;
+
+    @Override
+    public List<TweetResponseDto> getAllTweets() {
+
+        return tweetMapper.entitiesToResponseDtos(tweetRepository
+            .findAllByDeletedFalseOrderByPostedDesc());
+    }
+
 
     private List<String> parseTweetContent(String content, String regex, boolean caseSensitive) {
         Pattern pattern = Pattern.compile(regex);
