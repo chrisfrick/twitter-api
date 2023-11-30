@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Data
-public class TweetRequestDto {
+public class SimpleTweetRequestDto {
     
     private String content;
 
