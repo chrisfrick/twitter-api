@@ -142,6 +142,9 @@ public class TweetServiceImpl implements TweetService {
     @Override
     public TweetResponseDto deleteTweet(Long id) {
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No Tweet found with id: " + id);
+        }
         Tweet tweetToDelete = optionalTweet.get();
         
         tweetToDelete.setDeleted(true);
@@ -155,6 +158,9 @@ public class TweetServiceImpl implements TweetService {
     @Override
     public TweetResponseDto getTweetById(Long id) {
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No Tweet found with id: " + id);
+        }
         Tweet tweetToGet = optionalTweet.get();
         
         return tweetMapper.entityToTweetResponseDto(tweetToGet);
