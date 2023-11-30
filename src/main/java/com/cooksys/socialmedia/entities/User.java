@@ -45,25 +45,9 @@ public class User {
     @OneToMany(mappedBy = "author")
     private List<Tweet> tweets;
 
-    // TODO: mentionedUsers or similar property to Tweet entity, something like:
-    /**
-     * @ManyToMany
- *     @JoinTable(
- *         name = "tweet_mentions",
- *         joinColumns = @JoinColumn(name = "tweet_id"),
- *         inverseJoinColumns = @JoinColumn(name = "user_id")
- *     )
- *     private List<User> mentionedUsers;
-     */
-
     @ManyToMany(mappedBy = "mentionedUsers")
     private List<Tweet> mentions;
 
-    // TODO: add @ManyToMany relationship in Tweet entity, something like:
-    /**
-     * @ManyToMany(mappedBy = "likes")
-     * private Set<User> likedBy = new HashSet<>();
-     */
     @ManyToMany
     @JoinTable(
             name = "user_likes",

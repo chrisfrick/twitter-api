@@ -40,8 +40,14 @@ public class Tweet {
     @ManyToOne
     private Tweet inReplyTo;
 
+    @OneToMany(mappedBy = "inReplyTo")
+    private List<Tweet> replies = new ArrayList<>();
+
     @ManyToOne
     private Tweet repostOf;
+
+    @OneToMany(mappedBy = "repostOf")
+    private List<Tweet> reposts = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
