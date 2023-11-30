@@ -7,6 +7,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import java.util.List;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", uses = { CredentialsMapper.class, ProfileMapper.class })
 public interface UserMapper {
 
@@ -17,5 +19,5 @@ public interface UserMapper {
 
     @Mapping(source = "credentials.username", target = "username")
     List<UserResponseDto> entitiesToResponseDtos(List<User> users);
-  
+
 }
