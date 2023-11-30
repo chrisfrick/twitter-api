@@ -10,5 +10,5 @@ import java.util.List;
 public interface HashtagMapper {
     HashtagDto entityToDto(Hashtag hashtag);
 
-    List<HashtagDto> entitiesToDto(List<Hashtag> hashtags);
+    List<HashtagDto> entitiesToDtos(List<Hashtag> hashtags);
 }
