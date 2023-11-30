@@ -5,12 +5,17 @@ import com.cooksys.socialmedia.dtos.UserResponseDto;
 import com.cooksys.socialmedia.entities.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import java.util.List;
 
 @Mapper(componentModel = "spring", uses = { CredentialsMapper.class, ProfileMapper.class })
 public interface UserMapper {
 
-    @Mapping(target = "username", source = "credentials.username")
+    User requestDtoToEntity(UserRequestDto userRequestDto);
+
+    @Mapping(source = "credentials.username", target = "username")
     UserResponseDto entityToResponseDto(User user);
 
-    User requestDtoToEntity(UserRequestDto userRequestDto);
+    @Mapping(source = "credentials.username", target = "username")
+    List<UserResponseDto> entitiesToResponseDtos(List<User> users);
+  
 }
