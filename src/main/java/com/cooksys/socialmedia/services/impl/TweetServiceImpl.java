@@ -8,6 +8,7 @@ import com.cooksys.socialmedia.entities.Tweet;
 import com.cooksys.socialmedia.entities.User;
 import com.cooksys.socialmedia.exceptions.BadRequestException;
 import com.cooksys.socialmedia.exceptions.NotAuthorizedException;
+import com.cooksys.socialmedia.exceptions.NotFoundException;
 import com.cooksys.socialmedia.mappers.CredentialsMapper;
 import com.cooksys.socialmedia.mappers.TweetMapper;
 import com.cooksys.socialmedia.repositories.HashtagRepository;
@@ -106,6 +107,26 @@ public class TweetServiceImpl implements TweetService {
         processHashtags(tweetToSave);
 
         return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(tweetToSave));
+    }
+
+    @Override
+    public List<TweetResponseDto> getTweetReposts(Long id) {
+
+        Optional<Tweet> optionalRepostedTweet = tweetRepository.findByIdAndDeletedFalse(id);
+
+        if (optionalRepostedTweet.isEmpty()) {
+            throw new NotFoundException("No tweet found with id: " + id);
+        }
+
+        List<Tweet> notDeletedReposts = new ArrayList<>();
+
+        for (Tweet tweet : optionalRepostedTweet.get().getReposts()) {
+            if (!tweet.isDeleted()) {
+                notDeletedReposts.add(tweet);
+            }
+        }
+
+        return tweetMapper.entitiesToResponseDtos(notDeletedReposts);
     }
 
 }
