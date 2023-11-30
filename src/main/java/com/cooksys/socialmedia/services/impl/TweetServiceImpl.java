@@ -31,6 +31,21 @@ public class TweetServiceImpl implements TweetService {
     private final TweetRepository tweetRepository;
     private final UserRepository userRepository;
 
+    private List<String> parseMentions(String content) {
+        if (content == null) {
+            throw new BadRequestException("New tweet must have content");
+        }
+
+        Pattern regex = Pattern.compile("(?<=@)\\w+");
+        Matcher m = regex.matcher(content);
+
+        List<String> mentionedUsernames = new ArrayList<>();
+        if (m.find()) {
+            mentionedUsernames.add(m.group());
+        }
+        return mentionedUsernames;
+    }
+
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
 
@@ -46,16 +61,7 @@ public class TweetServiceImpl implements TweetService {
 
         tweetToSave.setAuthor(optionalUser.get());
 
-        if (tweetToSave.getContent() == null) {
-            throw new BadRequestException("New tweet must have content");
-        }
-        
-        Pattern mentionsRegex = Pattern.compile("(?<=@)\\w+");
-        Matcher m = mentionsRegex.matcher(tweetToSave.getContent());
-        List<String> mentionedUsernames = new ArrayList<>();
-        if (m.find()) {
-            mentionedUsernames.add(m.group());
-        }
+        List<String> mentionedUsernames = parseMentions(tweetToSave.getContent());
 
         List<User> mentionedUsers = new ArrayList<>();
 
