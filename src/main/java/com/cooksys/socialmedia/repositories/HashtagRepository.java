@@ -9,4 +9,7 @@ import java.util.Optional;
 @Repository
 public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
     Optional<Hashtag> findByLabel(String hashtag);
+
+    Optional<Hashtag> findByLabelIgnoreCase(String label);
+
 }
