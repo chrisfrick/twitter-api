@@ -151,4 +151,13 @@ public class TweetServiceImpl implements TweetService {
         
     }
 
+
+    @Override
+    public TweetResponseDto getTweetById(Long id) {
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        Tweet tweetToGet = optionalTweet.get();
+        
+        return tweetMapper.entityToTweetResponseDto(tweetToGet);
+    }
+
 }
