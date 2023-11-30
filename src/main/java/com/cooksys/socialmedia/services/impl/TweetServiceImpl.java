@@ -15,7 +15,11 @@ import com.cooksys.socialmedia.services.TweetService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @AllArgsConstructor
@@ -45,6 +49,26 @@ public class TweetServiceImpl implements TweetService {
         if (tweetToSave.getContent() == null) {
             throw new BadRequestException("New tweet must have content");
         }
+        
+        Pattern mentionsRegex = Pattern.compile("(?<=@)\\w+");
+        Matcher m = mentionsRegex.matcher(tweetToSave.getContent());
+        List<String> mentionedUsernames = new ArrayList<>();
+        if (m.find()) {
+            mentionedUsernames.add(m.group());
+        }
+
+        List<User> mentionedUsers = new ArrayList<>();
+
+        for (String username : mentionedUsernames) {
+            Optional<User> optionalMentionedUser = userRepository.findByCredentials_UsernameAndDeletedFalse(username);
+
+            if (optionalMentionedUser.isPresent()) {
+                mentionedUsers.add(optionalMentionedUser.get());
+            }
+        }
+        tweetToSave.setMentionedUsers(mentionedUsers);
+
+        // TODO: Hashtag matching
 
         return tweetMapper.entityToSimpleTweetResponseDto(tweetRepository.saveAndFlush(tweetToSave));
     }
