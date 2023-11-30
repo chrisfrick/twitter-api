@@ -1,7 +1,7 @@
 package com.cooksys.socialmedia.services.impl;
 
-import com.cooksys.socialmedia.dtos.SimpleTweetResponseDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
+import com.cooksys.socialmedia.dtos.TweetResponseDto;
 import com.cooksys.socialmedia.entities.Credentials;
 import com.cooksys.socialmedia.entities.Tweet;
 import com.cooksys.socialmedia.entities.User;
@@ -12,7 +12,7 @@ import com.cooksys.socialmedia.mappers.TweetMapper;
 import com.cooksys.socialmedia.repositories.TweetRepository;
 import com.cooksys.socialmedia.repositories.UserRepository;
 import com.cooksys.socialmedia.services.TweetService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class TweetServiceImpl implements TweetService {
 
     private final TweetMapper tweetMapper;
@@ -32,7 +32,7 @@ public class TweetServiceImpl implements TweetService {
     private final UserRepository userRepository;
 
     @Override
-    public SimpleTweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
+    public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
 
         Tweet tweetToSave = tweetMapper.tweetRequestDtoToEntity(tweetRequestDto);
 
@@ -70,6 +70,6 @@ public class TweetServiceImpl implements TweetService {
 
         // TODO: Hashtag matching
 
-        return tweetMapper.entityToSimpleTweetResponseDto(tweetRepository.saveAndFlush(tweetToSave));
+        return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(tweetToSave));
     }
 }

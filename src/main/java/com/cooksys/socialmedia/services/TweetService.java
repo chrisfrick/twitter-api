@@ -1,9 +1,9 @@
 package com.cooksys.socialmedia.services;
 
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
-import com.cooksys.socialmedia.dtos.SimpleTweetResponseDto;
+import com.cooksys.socialmedia.dtos.TweetResponseDto;
 
 public interface TweetService {
 
-    SimpleTweetResponseDto createTweet(TweetRequestDto tweetRequestDto);
+    TweetResponseDto createTweet(TweetRequestDto tweetRequestDto);
 }
