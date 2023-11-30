@@ -36,51 +36,20 @@ public class TweetServiceImpl implements TweetService {
     private final UserRepository userRepository;
     private final HashtagRepository hashtagRepository;
 
-    private List<String> parseMentions(String content) {
+    private List<String> parseTweetContent(String content, String regex, boolean caseSensitive) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher m = pattern.matcher(content);
 
-        Pattern regex = Pattern.compile("(?<=@)\\w+");
-        Matcher m = regex.matcher(content);
-
-        List<String> mentionedUsernames = new ArrayList<>();
+        List<String> matches = new ArrayList<>();
         while (m.find()) {
-            mentionedUsernames.add(m.group());
+            String match = caseSensitive ? m.group() : m.group().toLowerCase();
+            matches.add(match);
         }
-
-        System.out.println(mentionedUsernames);
-        return mentionedUsernames;
+        return matches;
     }
 
-    private List<String> parseHashtags(String content) {
-
-        Pattern regex = Pattern.compile("#\\w+");
-        Matcher m = regex.matcher(content);
-
-        List<String> hashtags = new ArrayList<>();
-        while (m.find()) {
-            hashtags.add(m.group().toLowerCase());
-        }
-        return hashtags;
-    }
-
-    @Override
-    public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
-
-        Tweet tweetToSave = tweetMapper.tweetRequestDtoToEntity(tweetRequestDto);
-        Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
-
-        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
-
-        if (optionalUser.isEmpty() || optionalUser.get().isDeleted()) {
-            throw new NotAuthorizedException("User with given credentials does not exist");
-        }
-
-        if (tweetToSave.getContent() == null) {
-            throw new BadRequestException("New tweet must have content");
-        }
-
-        tweetToSave.setAuthor(optionalUser.get());
-
-        List<String> mentionedUsernames = parseMentions(tweetToSave.getContent());
+    private void processMentionedUsers(Tweet tweetToSave) {
+        List<String> mentionedUsernames = parseTweetContent(tweetToSave.getContent(), "(?<=@)\\w+", true);
         List<User> mentionedUsers = new ArrayList<>();
 
         for (String username : mentionedUsernames) {
@@ -92,8 +61,11 @@ public class TweetServiceImpl implements TweetService {
         }
 
         tweetToSave.setMentionedUsers(mentionedUsers);
+    }
 
-        List<String> hashtagsFound = parseHashtags(tweetToSave.getContent());
+    private void processHashtags(Tweet tweetToSave) {
+
+        List<String> hashtagsFound = parseTweetContent(tweetToSave.getContent(), "#\\w+", false);
         List<Hashtag> hashtags = new ArrayList<>();
 
         for (String label : hashtagsFound) {
@@ -111,7 +83,29 @@ public class TweetServiceImpl implements TweetService {
         }
 
         tweetToSave.setHashtags(hashtags);
+    }
+
+    @Override
+    public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
+
+        Tweet tweetToSave = tweetMapper.tweetRequestDtoToEntity(tweetRequestDto);
+
+        if (tweetToSave.getContent() == null) {
+            throw new BadRequestException("New tweet must have content");
+        }
+
+        Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
+        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
+
+        if (optionalUser.isEmpty() || optionalUser.get().isDeleted()) {
+            throw new NotAuthorizedException("User with given credentials does not exist");
+        }
+
+        tweetToSave.setAuthor(optionalUser.get());
+        processMentionedUsers(tweetToSave);
+        processHashtags(tweetToSave);
 
         return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(tweetToSave));
     }
+
 }
