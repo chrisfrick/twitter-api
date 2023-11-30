@@ -4,6 +4,7 @@ import com.cooksys.socialmedia.dtos.CredentialsDto;
 import com.cooksys.socialmedia.dtos.ProfileDto;
 import com.cooksys.socialmedia.dtos.UserResponseDto;
 import com.cooksys.socialmedia.entities.Credentials;
+import com.cooksys.socialmedia.entities.Profile;
 import com.cooksys.socialmedia.entities.User;
 import com.cooksys.socialmedia.exceptions.NotFoundException;
 import com.cooksys.socialmedia.mappers.CredentialsMapper;
@@ -34,10 +35,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDto updateUser(String username, CredentialsDto credentialsDto, ProfileDto profileDto) {
 
-        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
-        Optional<User> optionalUser = userRepository.findByCredentials_UsernameAndDeletedFalse(username);
+        if (credentialsDto == null) {
+            throw new NotFoundException("No Credentials given. Please provide credentials");
+
+        }
+        Optional<Credentials> optionalCredentials = Optional.of(credentialsMapper.dtoToEntity(credentialsDto));
+        Credentials credentials = optionalCredentials.get();
+        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
         if (optionalUser.isEmpty()) {
-            throw new NotFoundException("No User found with Username: " + username);
+            System.out.println(userRepository.findByCredentials(credentials));
+            throw new NotFoundException("No User found with Username: " + credentials.getUsername());
+
+        }
+        if (optionalUser.isEmpty()) {
+            System.out.println(userRepository.findByCredentials(credentials));
+            throw new NotFoundException("No User found with Username: " + credentials.getUsername());
 
         }
         User userToUpdate = optionalUser.get();
