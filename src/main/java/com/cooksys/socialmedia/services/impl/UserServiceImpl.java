@@ -29,37 +29,48 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponseDto> getAllUsers() {
-        return userMapper.entitiesToResponseDtos(userRepository.findAllByDeletedFalse());
+        return userMapper.entitiesToResponseDtos(userRepository
+            .findAllByDeletedFalse());
     }
 
+
     @Override
-    public UserResponseDto updateUser(String username, CredentialsDto credentialsDto, ProfileDto profileDto) {
+    public UserResponseDto updateUser(
+        String username,
+        CredentialsDto credentialsDto,
+        ProfileDto profileDto) {
 
         if (credentialsDto == null) {
-            throw new NotFoundException("No Credentials given. Please provide credentials");
+            throw new NotFoundException(
+                "No Credentials given. Please provide credentials");
 
         }
-        Optional<Credentials> optionalCredentials = Optional.of(credentialsMapper.dtoToEntity(credentialsDto));
+        Optional<Credentials> optionalCredentials = Optional.of(
+            credentialsMapper.dtoToEntity(credentialsDto));
         Credentials credentials = optionalCredentials.get();
-        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
+        Optional<User> optionalUser = userRepository.findByCredentials(
+            credentials);
         if (optionalUser.isEmpty()) {
             System.out.println(userRepository.findByCredentials(credentials));
-            throw new NotFoundException("No User found with Username: " + credentials.getUsername());
+            throw new NotFoundException("No User found with Username: "
+                + credentials.getUsername());
 
         }
         if (optionalUser.isEmpty()) {
             System.out.println(userRepository.findByCredentials(credentials));
-            throw new NotFoundException("No User found with Username: " + credentials.getUsername());
+            throw new NotFoundException("No User found with Username: "
+                + credentials.getUsername());
 
         }
         User userToUpdate = optionalUser.get();
         userToUpdate.setProfile(profileMapper.dtoToEntity(profileDto));
         userToUpdate.setCredentials(credentials);
-        
-        return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToUpdate));
-        
-        
+
+        return userMapper.entityToResponseDto(userRepository.saveAndFlush(
+            userToUpdate));
+
     }
+
 
     @Override
     public UserResponseDto deleteUser(
@@ -67,58 +78,96 @@ public class UserServiceImpl implements UserService {
         CredentialsDto credentialsDto) {
 
         if (credentialsDto == null) {
-            throw new NotFoundException("No Credentials given. Please provide credentials");
+            throw new NotFoundException(
+                "No Credentials given. Please provide credentials");
 
         }
-        Optional<Credentials> optionalCredentials = Optional.of(credentialsMapper.dtoToEntity(credentialsDto));
+        Optional<Credentials> optionalCredentials = Optional.of(
+            credentialsMapper.dtoToEntity(credentialsDto));
         Credentials credentials = optionalCredentials.get();
-        
-        Optional<User> optionalUser = userRepository.findByCredentials_UsernameAndDeletedFalse(credentials.getUsername());
+
+        Optional<User> optionalUser = userRepository
+            .findByCredentials_UsernameAndDeletedFalse(credentials
+                .getUsername());
         if (optionalUser.isEmpty()) {
             System.out.println(userRepository.findByCredentials(credentials));
-            throw new NotFoundException("No User found with Username: " + credentials.getUsername());
+            throw new NotFoundException("No User found with Username: "
+                + credentials.getUsername());
 
         }
-        
+
         User userToDelete = optionalUser.get();
         userToDelete.setDeleted(true);
-        
-        return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToDelete));
+
+        return userMapper.entityToResponseDto(userRepository.saveAndFlush(
+            userToDelete));
     }
+
 
     @Override
     public UserResponseDto getUser(String username) {
 
-        Optional<User> optionalUser = userRepository.findByCredentials_UsernameAndDeletedFalse(username);
-        
+        Optional<User> optionalUser = userRepository
+            .findByCredentials_UsernameAndDeletedFalse(username);
+
         if (optionalUser.isEmpty()) {
-            throw new NotFoundException("No User found with Username: " + username);
+            throw new NotFoundException("No User found with Username: "
+                + username);
 
         }
-        
+
         return userMapper.entityToResponseDto(optionalUser.get());
     }
+
 
     @Override
     public List<UserResponseDto> getFollowers(String username) {
 
-        Optional<User> optionalUser = userRepository.findByCredentials_UsernameAndDeletedFalse(username);
-        
+        Optional<User> optionalUser = userRepository
+            .findByCredentials_UsernameAndDeletedFalse(username);
+
         if (optionalUser.isEmpty()) {
-            throw new NotFoundException("No User found with Username: " + username);
+            throw new NotFoundException("No User found with Username: "
+                + username);
 
         }
         User followedUser = optionalUser.get();
-        
+
         List<User> followers = new ArrayList<User>();
-        
+
         for (User user : followedUser.getFollowers()) {
-            
+
             if (!(user.isDeleted())) {
                 followers.add(user);
             }
         }
-        
+
         return userMapper.entitiesToResponseDtos(followers);
+    }
+
+
+    @Override
+    public List<UserResponseDto> getFollowing(String username) {
+
+        Optional<User> optionalUser = userRepository
+            .findByCredentials_UsernameAndDeletedFalse(username);
+
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("No User found with Username: "
+                + username);
+
+        }
+        User userWithFollowingList = optionalUser.get();
+        
+        List<User> following = new ArrayList<User>();
+        
+        for (User user : userWithFollowingList.getFollowing()) {
+            
+            if (!(user.isDeleted())) {
+                following.add(user);
+            }
+        }
+        
+        return userMapper.entitiesToResponseDtos(following);
     }
 }
