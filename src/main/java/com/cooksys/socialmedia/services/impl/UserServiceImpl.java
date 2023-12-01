@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
 //                 if the request body differs from what's in the db?
                 return userMapper.entityToResponseDto(userRepository.saveAndFlush(existingUser));
             } else {
-                throw new BadRequestException("Username " + userRequestDto.getCredentials().getUsername() + " is unavailable");
+                throw new BadRequestException("Username " + username + " is unavailable");
             }
         }
 
