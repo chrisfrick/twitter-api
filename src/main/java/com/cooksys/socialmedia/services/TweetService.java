@@ -20,4 +20,6 @@ public interface TweetService {
 
     List<HashtagDto> getTweetTags(Long id);
 
+    TweetResponseDto createReplyTweet(Long id, TweetRequestDto tweetRequestDto);
+
 }

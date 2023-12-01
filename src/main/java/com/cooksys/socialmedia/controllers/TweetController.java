@@ -58,5 +58,10 @@ public class TweetController {
         return tweetService.getTweetTags(id);
     }
     
+    @PostMapping("/{id}/reply")
+    public TweetResponseDto createReplyTweet(@PathVariable Long id, @RequestBody TweetRequestDto tweetRequestDto) {
+        return tweetService.createReplyTweet(id, tweetRequestDto);
+    }
+    
 
 }
