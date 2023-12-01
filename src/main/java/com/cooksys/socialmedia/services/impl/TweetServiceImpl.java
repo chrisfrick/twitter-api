@@ -172,17 +172,35 @@ public class TweetServiceImpl implements TweetService {
         }
     }
 
+    private void getAllNotDeletedInReplyToTweets(Tweet target, List<Tweet> allInReplyToTweets) {
+
+        Tweet inReplyTo = target.getInReplyTo();
+
+        if (inReplyTo == null) return;
+
+        if (!inReplyTo.isDeleted()) {
+            allInReplyToTweets.add(inReplyTo);
+        }
+
+        getAllNotDeletedInReplyToTweets(inReplyTo, allInReplyToTweets);
+    }
+
     @Override
     public ContextDto getTweetContext(Long id) {
 
         Tweet target = getNotDeletedTweet(id);
+
         List<Tweet> afterContext = new ArrayList<>();
         getAllNotDeletedReplies(target, afterContext);
-
         Collections.sort(afterContext, (tweet1, tweet2) -> tweet1.getPosted().compareTo(tweet2.getPosted()));
+
+        List<Tweet> beforeContext = new ArrayList<>();
+        getAllNotDeletedInReplyToTweets(target, beforeContext);
+        Collections.sort(beforeContext, (tweet1, tweet2) -> tweet1.getPosted().compareTo(tweet2.getPosted()));
 
         ContextDto context = new ContextDto();
         context.setTarget(tweetMapper.entityToTweetResponseDto(target));
+        context.setBefore(tweetMapper.entitiesToResponseDtos(beforeContext));
         context.setAfter(tweetMapper.entitiesToResponseDtos(afterContext));
 
         return context;
