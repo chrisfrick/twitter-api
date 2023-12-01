@@ -256,4 +256,37 @@ public class UserServiceImpl implements UserService {
 
         return tweetMapper.entitiesToResponseDtos(tweets);
     }
+
+
+    @Override
+    public List<TweetResponseDto> getUserMentions(String username) {
+
+        Optional<User> optionalUser = userRepository
+            .findByCredentials_UsernameAndDeletedFalse(username);
+
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("No User found with Username: "
+                + username);
+
+        }
+        User userMentioned = optionalUser.get();
+        
+        List<Tweet> tweets = tweetRepository.findAllByDeletedFalseOrderByPostedDesc();
+        List<Tweet> tweetsWhereUserMentioned = new ArrayList<Tweet>();
+        
+        for (Tweet tweet : tweets) {
+            
+            Optional<String> optionalContent = Optional.ofNullable(tweet.getContent());
+            if (!(optionalContent.isEmpty())) {
+                
+                String content = tweet.getContent();
+                
+                if (content.contains("@" + username)) {
+                    tweetsWhereUserMentioned.add(tweet);
+                }
+            }
+        }
+        
+        return tweetMapper.entitiesToResponseDtos(tweetsWhereUserMentioned);
+    }
 }
