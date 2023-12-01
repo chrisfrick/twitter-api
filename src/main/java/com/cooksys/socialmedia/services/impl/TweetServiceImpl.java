@@ -239,4 +239,27 @@ public class TweetServiceImpl implements TweetService {
             .saveAndFlush(reply));
     }
 
+
+    @Override
+    public List<TweetResponseDto> getTweetReplies(Long id) {
+
+        Optional<Tweet> optionalTweet = tweetRepository
+            .findByIdAndDeletedFalse(id);
+
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No tweet found with id: " + id);
+        }
+
+        Tweet tweetWithReplies = optionalTweet.get();
+        List<Tweet> notDeletedReplies = new ArrayList<>();
+
+        for (Tweet tweet : tweetWithReplies.getReplies()) {
+            if (!tweet.isDeleted()) {
+                notDeletedReplies.add(tweet);
+            }
+        }
+
+        return tweetMapper.entitiesToResponseDtos(notDeletedReplies);
+    }
+
 }
