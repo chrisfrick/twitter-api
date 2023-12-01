@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 import com.cooksys.socialmedia.dtos.HashtagDto;
+import com.cooksys.socialmedia.dtos.ContextDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
 import com.cooksys.socialmedia.dtos.TweetResponseDto;
 import com.cooksys.socialmedia.entities.Credentials;
@@ -27,6 +28,16 @@ import com.cooksys.socialmedia.repositories.TweetRepository;
 import com.cooksys.socialmedia.repositories.UserRepository;
 import com.cooksys.socialmedia.services.TweetService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +61,17 @@ public class TweetServiceImpl implements TweetService {
 
         return tweetMapper.entitiesToResponseDtos(tweetRepository
             .findAllByDeletedFalseOrderByPostedDesc());
+    }
+
+    private Tweet getNotDeletedTweet(Long id) {
+
+        Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
+
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No Tweet found with id: " + id);
+        }
+
+        return optionalTweet.get();
     }
 
 
@@ -145,16 +167,10 @@ public class TweetServiceImpl implements TweetService {
     @Override
     public List<TweetResponseDto> getTweetReposts(Long id) {
 
-        Optional<Tweet> optionalRepostedTweet = tweetRepository
-            .findByIdAndDeletedFalse(id);
-
-        if (optionalRepostedTweet.isEmpty()) {
-            throw new NotFoundException("No tweet found with id: " + id);
-        }
-
+        Tweet repostedTweet = getNotDeletedTweet(id);
         List<Tweet> notDeletedReposts = new ArrayList<>();
 
-        for (Tweet tweet : optionalRepostedTweet.get().getReposts()) {
+        for (Tweet tweet : repostedTweet.getReposts()) {
             if (!tweet.isDeleted()) {
                 notDeletedReposts.add(tweet);
             }
@@ -163,27 +179,17 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entitiesToResponseDtos(notDeletedReposts);
     }
 
-
     @Override
     public TweetResponseDto deleteTweet(Long id) {
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        Tweet tweetToDelete = optionalTweet.get();
 
+        Tweet tweetToDelete = getNotDeletedTweet(id);
         tweetToDelete.setDeleted(true);
-
-        return tweetMapper.entityToTweetResponseDto(tweetRepository
-            .saveAndFlush(tweetToDelete));
-
+        return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(tweetToDelete));
     }
-
 
     @Override
     public TweetResponseDto getTweetById(Long id) {
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (optionalTweet.isEmpty()) {
-            throw new NotFoundException("No Tweet found with id: " + id);
 
-        }
         Tweet tweetToGet = optionalTweet.get();
 
         return tweetMapper.entityToTweetResponseDto(tweetToGet);
@@ -260,6 +266,51 @@ public class TweetServiceImpl implements TweetService {
         }
 
         return tweetMapper.entitiesToResponseDtos(notDeletedReplies);
+
+    }
+
+    private void getAllNotDeletedReplies(Tweet target, List<Tweet> allReplies) {
+
+        for (Tweet reply : target.getReplies()) {
+            if (!reply.isDeleted()) {
+                allReplies.add(reply);
+            }
+            getAllNotDeletedReplies(reply, allReplies);
+        }
+    }
+
+    private void getAllNotDeletedInReplyToTweets(Tweet target, List<Tweet> allInReplyToTweets) {
+
+        Tweet inReplyTo = target.getInReplyTo();
+
+        if (inReplyTo == null) return;
+
+        if (!inReplyTo.isDeleted()) {
+            allInReplyToTweets.add(inReplyTo);
+        }
+
+        getAllNotDeletedInReplyToTweets(inReplyTo, allInReplyToTweets);
+    }
+
+    @Override
+    public ContextDto getTweetContext(Long id) {
+
+        Tweet target = getNotDeletedTweet(id);
+
+        List<Tweet> afterContext = new ArrayList<>();
+        getAllNotDeletedReplies(target, afterContext);
+        Collections.sort(afterContext, (tweet1, tweet2) -> tweet1.getPosted().compareTo(tweet2.getPosted()));
+
+        List<Tweet> beforeContext = new ArrayList<>();
+        getAllNotDeletedInReplyToTweets(target, beforeContext);
+        Collections.sort(beforeContext, (tweet1, tweet2) -> tweet1.getPosted().compareTo(tweet2.getPosted()));
+
+        ContextDto context = new ContextDto();
+        context.setTarget(tweetMapper.entityToTweetResponseDto(target));
+        context.setBefore(tweetMapper.entitiesToResponseDtos(beforeContext));
+        context.setAfter(tweetMapper.entitiesToResponseDtos(afterContext));
+
+        return context;
     }
 
 }

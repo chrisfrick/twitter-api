@@ -2,6 +2,7 @@ package com.cooksys.socialmedia.services;
 
 import com.cooksys.socialmedia.dtos.CredentialsDto;
 import com.cooksys.socialmedia.dtos.ProfileDto;
+import com.cooksys.socialmedia.dtos.UserRequestDto;
 import com.cooksys.socialmedia.dtos.UserResponseDto;
 
 import java.util.List;
@@ -16,4 +17,7 @@ public interface UserService {
     UserResponseDto getUser(String username);
 
     List<UserResponseDto> getFollowers(String username);
+
+    UserResponseDto createUser(UserRequestDto userRequestDto);
+
 }
