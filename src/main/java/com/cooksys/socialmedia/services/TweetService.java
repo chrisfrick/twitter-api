@@ -1,8 +1,10 @@
 package com.cooksys.socialmedia.services;
 
-import java.util.List;
+import com.cooksys.socialmedia.dtos.ContextDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
 import com.cooksys.socialmedia.dtos.TweetResponseDto;
+
+import java.util.List;
 
 public interface TweetService {
 
@@ -16,4 +18,5 @@ public interface TweetService {
 
     TweetResponseDto getTweetById(Long id);
 
+    ContextDto getTweetContext(Long id);
 }
