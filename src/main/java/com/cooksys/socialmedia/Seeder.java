@@ -1,20 +1,15 @@
 package com.cooksys.socialmedia;
-import java.util.Arrays;
-import java.util.List;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
-
-import com.cooksys.socialmedia.entities.Credentials;
-import com.cooksys.socialmedia.entities.Hashtag;
-import com.cooksys.socialmedia.entities.Profile;
-import com.cooksys.socialmedia.entities.Tweet;
-import com.cooksys.socialmedia.entities.User;
+import com.cooksys.socialmedia.entities.*;
 import com.cooksys.socialmedia.repositories.HashtagRepository;
 import com.cooksys.socialmedia.repositories.TweetRepository;
 import com.cooksys.socialmedia.repositories.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -249,7 +244,7 @@ public class Seeder implements CommandLineRunner {
 
         user3.setUserLikes(user2Tweets);
         userRepository.saveAndFlush(user3);
-        
+
         deletedUser.setUserLikes(user2Tweets);
         userRepository.saveAndFlush(deletedUser);
 
