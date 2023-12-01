@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -146,7 +147,6 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entitiesToResponseDtos(notDeletedReposts);
     }
 
-
     @Override
     public TweetResponseDto deleteTweet(Long id) {
 
@@ -155,12 +155,37 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(tweetToDelete));
     }
 
-
     @Override
     public TweetResponseDto getTweetById(Long id) {
 
         Tweet tweetToGet = getNotDeletedTweet(id);
         return tweetMapper.entityToTweetResponseDto(tweetToGet);
+    }
+
+    private void getAllNotDeletedReplies(Tweet target, List<Tweet> allReplies) {
+
+        for (Tweet reply : target.getReplies()) {
+            if (!reply.isDeleted()) {
+                allReplies.add(reply);
+            }
+            getAllNotDeletedReplies(reply, allReplies);
+        }
+    }
+
+    @Override
+    public ContextDto getTweetContext(Long id) {
+
+        Tweet target = getNotDeletedTweet(id);
+        List<Tweet> afterContext = new ArrayList<>();
+        getAllNotDeletedReplies(target, afterContext);
+
+        Collections.sort(afterContext, (tweet1, tweet2) -> tweet1.getPosted().compareTo(tweet2.getPosted()));
+
+        ContextDto context = new ContextDto();
+        context.setTarget(tweetMapper.entityToTweetResponseDto(target));
+        context.setAfter(tweetMapper.entitiesToResponseDtos(afterContext));
+
+        return context;
     }
 
 }
