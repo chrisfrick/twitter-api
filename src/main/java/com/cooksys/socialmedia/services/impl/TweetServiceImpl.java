@@ -199,12 +199,7 @@ public class TweetServiceImpl implements TweetService {
     @Override
     public List<HashtagDto> getTweetTags(Long id) {
 
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (optionalTweet.isEmpty()) {
-            throw new NotFoundException("No Tweet found with id: " + id);
-
-        }
-        Tweet tweetWithTags = optionalTweet.get();
+        Tweet tweetWithTags = getNotDeletedTweet(id);
         if (tweetWithTags.isDeleted() == true) {
             throw new NotAuthorizedException("Tweet has been deleted");
         }
@@ -221,12 +216,8 @@ public class TweetServiceImpl implements TweetService {
         Long id,
         TweetRequestDto tweetRequestDto) {
 
-        Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
-        if (optionalTweet.isEmpty()) {
-            throw new NotFoundException("No Tweet found with id: " + id);
-        }
-        
-        Tweet tweetToReplyTo = optionalTweet.get();
+     
+        Tweet tweetToReplyTo = getNotDeletedTweet(id);
         
         Credentials providedCredentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
         Optional<User> optionalUser = userRepository.findByCredentials(providedCredentials);
@@ -249,14 +240,8 @@ public class TweetServiceImpl implements TweetService {
     @Override
     public List<TweetResponseDto> getTweetReplies(Long id) {
 
-        Optional<Tweet> optionalTweet = tweetRepository
-            .findByIdAndDeletedFalse(id);
-
-        if (optionalTweet.isEmpty()) {
-            throw new NotFoundException("No tweet found with id: " + id);
-        }
-
-        Tweet tweetWithReplies = optionalTweet.get();
+        Tweet tweetWithReplies = getNotDeletedTweet(id);
+        
         List<Tweet> notDeletedReplies = new ArrayList<>();
 
         for (Tweet tweet : tweetWithReplies.getReplies()) {
