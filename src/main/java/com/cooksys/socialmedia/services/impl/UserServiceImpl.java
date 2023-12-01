@@ -14,7 +14,7 @@ import com.cooksys.socialmedia.repositories.UserRepository;
 import com.cooksys.socialmedia.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,5 +97,28 @@ public class UserServiceImpl implements UserService {
         }
         
         return userMapper.entityToResponseDto(optionalUser.get());
+    }
+
+    @Override
+    public List<UserResponseDto> getFollowers(String username) {
+
+        Optional<User> optionalUser = userRepository.findByCredentials_UsernameAndDeletedFalse(username);
+        
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("No User found with Username: " + username);
+
+        }
+        User followedUser = optionalUser.get();
+        
+        List<User> followers = new ArrayList<User>();
+        
+        for (User user : followedUser.getFollowers()) {
+            
+            if (!(user.isDeleted())) {
+                followers.add(user);
+            }
+        }
+        
+        return userMapper.entitiesToResponseDtos(followers);
     }
 }
