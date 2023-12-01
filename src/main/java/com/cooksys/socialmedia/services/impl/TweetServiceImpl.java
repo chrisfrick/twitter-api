@@ -3,6 +3,7 @@ package com.cooksys.socialmedia.services.impl;
 import com.cooksys.socialmedia.dtos.ContextDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
 import com.cooksys.socialmedia.dtos.TweetResponseDto;
+import com.cooksys.socialmedia.dtos.UserResponseDto;
 import com.cooksys.socialmedia.entities.Credentials;
 import com.cooksys.socialmedia.entities.Hashtag;
 import com.cooksys.socialmedia.entities.Tweet;
@@ -12,6 +13,7 @@ import com.cooksys.socialmedia.exceptions.NotAuthorizedException;
 import com.cooksys.socialmedia.exceptions.NotFoundException;
 import com.cooksys.socialmedia.mappers.CredentialsMapper;
 import com.cooksys.socialmedia.mappers.TweetMapper;
+import com.cooksys.socialmedia.mappers.UserMapper;
 import com.cooksys.socialmedia.repositories.HashtagRepository;
 import com.cooksys.socialmedia.repositories.TweetRepository;
 import com.cooksys.socialmedia.repositories.UserRepository;
@@ -33,11 +35,10 @@ import java.util.regex.Pattern;
 public class TweetServiceImpl implements TweetService {
 
     private final TweetMapper tweetMapper;
+    private final CredentialsMapper credentialsMapper;
+    private final UserMapper userMapper;
 
     private final TweetRepository tweetRepository;
-    
-    private final CredentialsMapper credentialsMapper;
-
     private final UserRepository userRepository;
     private final HashtagRepository hashtagRepository;
 
@@ -204,6 +205,22 @@ public class TweetServiceImpl implements TweetService {
         context.setAfter(tweetMapper.entitiesToResponseDtos(afterContext));
 
         return context;
+    }
+
+    @Override
+    public List<UserResponseDto> getMentionedUsers(Long id) {
+
+        Tweet tweet = getNotDeletedTweet(id);
+
+        List<User> notDeletedMentionedUsers = new ArrayList<>();
+
+        for (User u : tweet.getMentionedUsers()) {
+            if (!u.isDeleted()) {
+                notDeletedMentionedUsers.add(u);
+            }
+        }
+
+        return userMapper.entitiesToResponseDtos(notDeletedMentionedUsers);
     }
 
 }
