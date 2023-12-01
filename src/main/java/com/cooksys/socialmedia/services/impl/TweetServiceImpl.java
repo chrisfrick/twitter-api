@@ -1,13 +1,6 @@
 package com.cooksys.socialmedia.services.impl;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.springframework.stereotype.Service;
+import com.cooksys.socialmedia.dtos.ContextDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
 import com.cooksys.socialmedia.dtos.TweetResponseDto;
 import com.cooksys.socialmedia.entities.Credentials;
@@ -24,6 +17,15 @@ import com.cooksys.socialmedia.repositories.TweetRepository;
 import com.cooksys.socialmedia.repositories.UserRepository;
 import com.cooksys.socialmedia.services.TweetService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +45,17 @@ public class TweetServiceImpl implements TweetService {
 
         return tweetMapper.entitiesToResponseDtos(tweetRepository
             .findAllByDeletedFalseOrderByPostedDesc());
+    }
+
+    private Tweet getNotDeletedTweet(Long id) {
+
+        Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
+
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No Tweet found with id: " + id);
+        }
+
+        return optionalTweet.get();
     }
 
 
@@ -121,15 +134,10 @@ public class TweetServiceImpl implements TweetService {
     @Override
     public List<TweetResponseDto> getTweetReposts(Long id) {
 
-        Optional<Tweet> optionalRepostedTweet = tweetRepository.findByIdAndDeletedFalse(id);
-
-        if (optionalRepostedTweet.isEmpty()) {
-            throw new NotFoundException("No tweet found with id: " + id);
-        }
-
+        Tweet repostedTweet = getNotDeletedTweet(id);
         List<Tweet> notDeletedReposts = new ArrayList<>();
 
-        for (Tweet tweet : optionalRepostedTweet.get().getReposts()) {
+        for (Tweet tweet : repostedTweet.getReposts()) {
             if (!tweet.isDeleted()) {
                 notDeletedReposts.add(tweet);
             }
@@ -141,28 +149,17 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public TweetResponseDto deleteTweet(Long id) {
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (optionalTweet.isEmpty()) {
-            throw new NotFoundException("No Tweet found with id: " + id);
-        }
-        Tweet tweetToDelete = optionalTweet.get();
-        
+
+        Tweet tweetToDelete = getNotDeletedTweet(id);
         tweetToDelete.setDeleted(true);
-        
         return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(tweetToDelete));
-        
-        
     }
 
 
     @Override
     public TweetResponseDto getTweetById(Long id) {
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (optionalTweet.isEmpty()) {
-            throw new NotFoundException("No Tweet found with id: " + id);
-        }
-        Tweet tweetToGet = optionalTweet.get();
-        
+
+        Tweet tweetToGet = getNotDeletedTweet(id);
         return tweetMapper.entityToTweetResponseDto(tweetToGet);
     }
 
