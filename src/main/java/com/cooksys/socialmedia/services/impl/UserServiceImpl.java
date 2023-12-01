@@ -9,6 +9,10 @@ import com.cooksys.socialmedia.entities.User;
 import com.cooksys.socialmedia.exceptions.NotFoundException;
 import com.cooksys.socialmedia.mappers.CredentialsMapper;
 import com.cooksys.socialmedia.mappers.ProfileMapper;
+import com.cooksys.socialmedia.dtos.UserRequestDto;
+import com.cooksys.socialmedia.dtos.UserResponseDto;
+import com.cooksys.socialmedia.entities.User;
+import com.cooksys.socialmedia.exceptions.BadRequestException;
 import com.cooksys.socialmedia.mappers.UserMapper;
 import com.cooksys.socialmedia.repositories.UserRepository;
 import com.cooksys.socialmedia.services.UserService;
@@ -56,9 +60,7 @@ public class UserServiceImpl implements UserService {
         userToUpdate.setProfile(profileMapper.dtoToEntity(profileDto));
         userToUpdate.setCredentials(credentials);
         
-        return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToUpdate));
-        
-        
+        return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToUpdate));        
     }
 
     @Override
@@ -84,5 +86,35 @@ public class UserServiceImpl implements UserService {
         userToDelete.setDeleted(true);
         
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToDelete));
+      }
+  
+    public UserResponseDto createUser(UserRequestDto userRequestDto) {
+
+        if (userRequestDto.getCredentials() == null
+                || userRequestDto.getProfile() == null
+                || userRequestDto.getCredentials().getUsername() == null
+                || userRequestDto.getCredentials().getPassword() == null
+                || userRequestDto.getProfile().getEmail() == null) {
+            throw new BadRequestException("Username, password, and email are required");
+        }
+
+        String username = userRequestDto.getCredentials().getUsername();
+        Optional<User> optionalExistingUser = userRepository.findByCredentials_UsernameIgnoreCase(username);
+
+        if(optionalExistingUser.isPresent()) {
+            User existingUser = optionalExistingUser.get();
+
+            if (existingUser.isDeleted()) {
+                existingUser.setDeleted(false);     // Re-activate existing user
+//                 Should this path also update the re-activated user's profile info
+//                 if the request body differs from what's in the db?
+                return userMapper.entityToResponseDto(userRepository.saveAndFlush(existingUser));
+            } else {
+                throw new BadRequestException("Username " + username + " is unavailable");
+            }
+        }
+
+        User userToSave = userMapper.requestDtoToEntity(userRequestDto);
+        return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToSave));
     }
 }
