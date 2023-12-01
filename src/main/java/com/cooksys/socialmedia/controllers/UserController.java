@@ -41,4 +41,9 @@ public class UserController {
     public UserResponseDto deleteUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
         return userService.deleteUser(username, credentialsDto);
     }
+    
+    @GetMapping("/@{username}")
+    public UserResponseDto getUser(@PathVariable String username) {
+        return userService.getUser(username);
+    }
 }

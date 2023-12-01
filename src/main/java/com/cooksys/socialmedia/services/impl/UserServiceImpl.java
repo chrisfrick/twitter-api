@@ -85,4 +85,17 @@ public class UserServiceImpl implements UserService {
         
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToDelete));
     }
+
+    @Override
+    public UserResponseDto getUser(String username) {
+
+        Optional<User> optionalUser = userRepository.findByCredentials_UsernameAndDeletedFalse(username);
+        
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("No User found with Username: " + username);
+
+        }
+        
+        return userMapper.entityToResponseDto(optionalUser.get());
+    }
 }
