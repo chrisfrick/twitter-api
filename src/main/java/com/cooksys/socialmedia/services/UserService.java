@@ -25,4 +25,6 @@ public interface UserService {
 
     List<TweetResponseDto> getUserTweets(String username);
 
+    List<TweetResponseDto> getUserFeed(String username);
+
 }
