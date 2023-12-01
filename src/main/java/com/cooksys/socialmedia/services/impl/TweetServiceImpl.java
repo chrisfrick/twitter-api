@@ -1,6 +1,7 @@
 package com.cooksys.socialmedia.services.impl;
 
 import com.cooksys.socialmedia.dtos.ContextDto;
+import com.cooksys.socialmedia.dtos.CredentialsDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
 import com.cooksys.socialmedia.dtos.TweetResponseDto;
 import com.cooksys.socialmedia.entities.Credentials;
@@ -204,6 +205,28 @@ public class TweetServiceImpl implements TweetService {
         context.setAfter(tweetMapper.entitiesToResponseDtos(afterContext));
 
         return context;
+    }
+
+    @Override
+    public TweetResponseDto repostTweet(Long id, CredentialsDto credentialsDto) {
+
+        Tweet tweetToRepost = getNotDeletedTweet(id);
+        Credentials providedAuthorCredentials = credentialsMapper.dtoToEntity(credentialsDto);
+
+        // Unclear if username should be case-insensitive while looking up a user by credentials
+        // Here I've written it so that the username IS case-sensitive
+        Optional<User> optionalUser = userRepository.findByCredentialsAndDeletedFalse(providedAuthorCredentials);
+
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("No user found with provided credentials");
+        }
+
+        Tweet repostTweetToCreate = new Tweet();
+        repostTweetToCreate.setAuthor(optionalUser.get());
+        repostTweetToCreate.setRepostOf(tweetToRepost);
+
+        return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(repostTweetToCreate));
+
     }
 
 }
