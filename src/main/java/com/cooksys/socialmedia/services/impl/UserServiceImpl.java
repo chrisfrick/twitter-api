@@ -62,7 +62,32 @@ public class UserServiceImpl implements UserService {
         
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToUpdate));
         
+    }
+
+    @Override
+    public UserResponseDto deleteUser(
+        String username,
+        CredentialsDto credentialsDto) {
+
+        if (credentialsDto == null) {
+            throw new NotFoundException("No Credentials given. Please provide credentials");
+
+        }
+        Optional<Credentials> optionalCredentials = Optional.of(credentialsMapper.dtoToEntity(credentialsDto));
+        Credentials credentials = optionalCredentials.get();
         
+        Optional<User> optionalUser = userRepository.findByCredentials_UsernameAndDeletedFalse(credentials.getUsername());
+        if (optionalUser.isEmpty()) {
+            System.out.println(userRepository.findByCredentials(credentials));
+            throw new NotFoundException("No User found with Username: " + credentials.getUsername());
+
+        }
+        
+        User userToDelete = optionalUser.get();
+        userToDelete.setDeleted(true);
+        
+        return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToDelete));
+    }
 
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
 
