@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,7 @@ public class UserController {
     @DeleteMapping("/@{username}")
     public UserResponseDto deleteUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
         return userService.deleteUser(username, credentialsDto);
+    }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping

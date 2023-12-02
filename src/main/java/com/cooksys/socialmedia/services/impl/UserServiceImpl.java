@@ -61,8 +61,6 @@ public class UserServiceImpl implements UserService {
         userToUpdate.setCredentials(credentials);
         
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToUpdate));
-        
-        
     }
 
     @Override
@@ -89,7 +87,7 @@ public class UserServiceImpl implements UserService {
         
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToDelete));
     }
-  
+
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
 
         if (userRequestDto.getCredentials() == null
