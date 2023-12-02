@@ -1,6 +1,7 @@
 package com.cooksys.socialmedia.services;
 
 import com.cooksys.socialmedia.dtos.ContextDto;
+import com.cooksys.socialmedia.dtos.CredentialsDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
 import com.cooksys.socialmedia.dtos.TweetResponseDto;
 
@@ -19,4 +20,6 @@ public interface TweetService {
     TweetResponseDto getTweetById(Long id);
 
     ContextDto getTweetContext(Long id);
+
+    TweetResponseDto repostTweet(Long id, CredentialsDto credentialsDto);
 }

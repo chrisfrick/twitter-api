@@ -1,6 +1,7 @@
 package com.cooksys.socialmedia.controllers;
 
 import com.cooksys.socialmedia.dtos.ContextDto;
+import com.cooksys.socialmedia.dtos.CredentialsDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
 import com.cooksys.socialmedia.dtos.TweetResponseDto;
 import com.cooksys.socialmedia.services.TweetService;
@@ -50,6 +51,11 @@ public class TweetController {
     public ContextDto getTweetContext(@PathVariable Long id) {
         return tweetService.getTweetContext(id);
     }
-    
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/{id}/repost")
+    public TweetResponseDto repostTweet(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
+        return tweetService.repostTweet(id, credentialsDto);
+    }
 
 }
