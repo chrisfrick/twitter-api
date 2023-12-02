@@ -61,7 +61,6 @@ public class UserServiceImpl implements UserService {
         userToUpdate.setCredentials(credentials);
         
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToUpdate));
-        
     }
 
     @Override
@@ -117,6 +116,5 @@ public class UserServiceImpl implements UserService {
 
         User userToSave = userMapper.requestDtoToEntity(userRequestDto);
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToSave));
-
     }
 }

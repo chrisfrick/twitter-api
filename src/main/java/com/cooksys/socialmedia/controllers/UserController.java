@@ -34,7 +34,6 @@ public class UserController {
         return userService.getAllUsers();
     }
 
-    
     @PatchMapping("/@{username}")
     public UserResponseDto updateUser(@PathVariable String username, @RequestBody Map<String, Object> request) {
         CredentialsDto credentialsDto = objectMapper.convertValue(request.get("credentials"), CredentialsDto.class);

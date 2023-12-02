@@ -1,5 +1,14 @@
 package com.cooksys.socialmedia.services.impl;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.springframework.stereotype.Service;
+import com.cooksys.socialmedia.dtos.HashtagDto;
 import com.cooksys.socialmedia.dtos.ContextDto;
 import com.cooksys.socialmedia.dtos.CredentialsDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
@@ -12,6 +21,7 @@ import com.cooksys.socialmedia.exceptions.BadRequestException;
 import com.cooksys.socialmedia.exceptions.NotAuthorizedException;
 import com.cooksys.socialmedia.exceptions.NotFoundException;
 import com.cooksys.socialmedia.mappers.CredentialsMapper;
+import com.cooksys.socialmedia.mappers.HashtagMapper;
 import com.cooksys.socialmedia.mappers.TweetMapper;
 import com.cooksys.socialmedia.repositories.HashtagRepository;
 import com.cooksys.socialmedia.repositories.TweetRepository;
@@ -38,6 +48,8 @@ public class TweetServiceImpl implements TweetService {
     private final TweetRepository tweetRepository;
     
     private final CredentialsMapper credentialsMapper;
+    
+    private final HashtagMapper hashtagMapper;
 
     private final UserRepository userRepository;
     private final HashtagRepository hashtagRepository;
@@ -158,6 +170,33 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public TweetResponseDto getTweetById(Long id) {
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No Tweet found with id: " + id);
+
+        }
+        Tweet tweetToGet = optionalTweet.get();
+        
+        return tweetMapper.entityToTweetResponseDto(tweetToGet);
+    }
+
+
+    @Override
+    public List<HashtagDto> getTweetTags(Long id) {
+
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No Tweet found with id: " + id);
+
+        }
+        Tweet tweetWithTags = optionalTweet.get();
+        if (tweetWithTags.isDeleted() == true) {
+            throw new NotAuthorizedException("Tweet has been deleted");
+        }
+        
+        List<Hashtag> hashtags = hashtagRepository.findByTweets_Id(tweetWithTags.getId());
+        
+        return hashtagMapper.hashtagEntitiestoDtos(hashtags);
 
         Tweet tweetToGet = getNotDeletedTweet(id);
         return tweetMapper.entityToTweetResponseDto(tweetToGet);
