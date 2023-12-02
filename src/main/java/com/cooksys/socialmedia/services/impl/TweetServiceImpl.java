@@ -1,6 +1,7 @@
 package com.cooksys.socialmedia.services.impl;
 
 import com.cooksys.socialmedia.dtos.ContextDto;
+import com.cooksys.socialmedia.dtos.CredentialsDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
 import com.cooksys.socialmedia.dtos.TweetResponseDto;
 import com.cooksys.socialmedia.entities.Credentials;
@@ -204,6 +205,30 @@ public class TweetServiceImpl implements TweetService {
         context.setAfter(tweetMapper.entitiesToResponseDtos(afterContext));
 
         return context;
+    }
+
+    @Override
+    public void likeTweet(Long id, CredentialsDto credentialsDto) {
+        Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
+
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No tweet found with id: " + id);
+        }
+
+        Tweet tweet = optionalTweet.get();
+
+        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
+        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
+
+        if (optionalUser.isEmpty() || optionalUser.get().isDeleted()) {
+            throw new NotAuthorizedException("User with given credentials does not exist");
+        }
+
+        User user = optionalUser.get();
+
+        tweet.getLikedBy().add(user);
+
+        tweetRepository.save(tweet);
     }
 
 }
