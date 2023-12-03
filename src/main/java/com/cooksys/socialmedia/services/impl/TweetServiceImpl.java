@@ -1,9 +1,6 @@
 package com.cooksys.socialmedia.services.impl;
 
-import com.cooksys.socialmedia.dtos.ContextDto;
-import com.cooksys.socialmedia.dtos.CredentialsDto;
-import com.cooksys.socialmedia.dtos.TweetRequestDto;
-import com.cooksys.socialmedia.dtos.TweetResponseDto;
+import com.cooksys.socialmedia.dtos.*;
 import com.cooksys.socialmedia.entities.Credentials;
 import com.cooksys.socialmedia.entities.Hashtag;
 import com.cooksys.socialmedia.entities.Tweet;
@@ -13,6 +10,7 @@ import com.cooksys.socialmedia.exceptions.NotAuthorizedException;
 import com.cooksys.socialmedia.exceptions.NotFoundException;
 import com.cooksys.socialmedia.mappers.CredentialsMapper;
 import com.cooksys.socialmedia.mappers.TweetMapper;
+import com.cooksys.socialmedia.mappers.UserMapper;
 import com.cooksys.socialmedia.repositories.HashtagRepository;
 import com.cooksys.socialmedia.repositories.TweetRepository;
 import com.cooksys.socialmedia.repositories.UserRepository;
@@ -28,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +40,7 @@ public class TweetServiceImpl implements TweetService {
 
     private final UserRepository userRepository;
     private final HashtagRepository hashtagRepository;
+    private final UserMapper userMapper;
 
     @Override
     public List<TweetResponseDto> getAllTweets() {
@@ -231,4 +231,19 @@ public class TweetServiceImpl implements TweetService {
         tweetRepository.save(tweet);
     }
 
+    @Override
+    public List<UserResponseDto> getTweetLikes(Long id) {
+        Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
+
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No tweet found with id: " + id);
+        }
+
+        Tweet tweet = optionalTweet.get();
+
+        return tweet.getLikedBy().stream()
+                .filter(user -> !user.isDeleted())
+                .map(userMapper::entityToResponseDto)
+                .collect(Collectors.toList());
+    }
 }

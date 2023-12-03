@@ -1,9 +1,6 @@
 package com.cooksys.socialmedia.services;
 
-import com.cooksys.socialmedia.dtos.ContextDto;
-import com.cooksys.socialmedia.dtos.CredentialsDto;
-import com.cooksys.socialmedia.dtos.TweetRequestDto;
-import com.cooksys.socialmedia.dtos.TweetResponseDto;
+import com.cooksys.socialmedia.dtos.*;
 
 import java.util.List;
 
@@ -22,4 +19,6 @@ public interface TweetService {
     ContextDto getTweetContext(Long id);
 
     void likeTweet(Long id, CredentialsDto credentialsDto);
+
+    List<UserResponseDto> getTweetLikes(Long id);
 }

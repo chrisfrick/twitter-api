@@ -1,9 +1,6 @@
 package com.cooksys.socialmedia.controllers;
 
-import com.cooksys.socialmedia.dtos.ContextDto;
-import com.cooksys.socialmedia.dtos.CredentialsDto;
-import com.cooksys.socialmedia.dtos.TweetRequestDto;
-import com.cooksys.socialmedia.dtos.TweetResponseDto;
+import com.cooksys.socialmedia.dtos.*;
 import com.cooksys.socialmedia.services.TweetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -56,6 +53,12 @@ public class TweetController {
     @ResponseStatus(HttpStatus.OK)
     public void likeTweet(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
         tweetService.likeTweet(id, credentialsDto);
+    }
+
+    @GetMapping("/{id}/likes")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserResponseDto> getTweetLikes(@PathVariable Long id) {
+        return tweetService.getTweetLikes(id);
     }
 
 }
