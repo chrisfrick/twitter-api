@@ -185,7 +185,9 @@ public class TweetServiceImpl implements TweetService {
         
         return hashtagMapper.hashtagEntitiestoDtos(hashtags);
 
+
 //        We think these two lines of code are a leftover from fixing merge conflicts:
+
 
 //        Tweet tweetToGet = getNotDeletedTweet(id);
 //        return tweetMapper.entityToTweetResponseDto(tweetToGet);
