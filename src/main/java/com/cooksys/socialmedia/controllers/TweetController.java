@@ -61,4 +61,21 @@ public class TweetController {
         return tweetService.getTweetLikes(id);
     }
 
+    @GetMapping("/{id}/mentions")
+    public List<UserResponseDto> getMentionedUsers(@PathVariable Long id) {
+        return tweetService.getMentionedUsers(id);
+    }
+
+    @GetMapping("/{id}/tags")
+    public List<HashtagDto> getTweetTags(@PathVariable(name = "id") Long id) {
+        return tweetService.getTweetTags(id);
+    }
+    
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/{id}/repost")
+    public TweetResponseDto repostTweet(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
+        return tweetService.repostTweet(id, credentialsDto);
+
+    }
+
 }
