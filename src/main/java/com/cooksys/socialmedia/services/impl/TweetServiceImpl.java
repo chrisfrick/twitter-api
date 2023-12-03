@@ -1,16 +1,7 @@
 package com.cooksys.socialmedia.services.impl;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.springframework.stereotype.Service;
-import com.cooksys.socialmedia.dtos.HashtagDto;
-
 import com.cooksys.socialmedia.dtos.ContextDto;
+import com.cooksys.socialmedia.dtos.HashtagDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
 import com.cooksys.socialmedia.dtos.TweetResponseDto;
 import com.cooksys.socialmedia.entities.Credentials;
@@ -199,12 +190,6 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entityToTweetResponseDto(tweetRepository
             .saveAndFlush(tweetToDelete));
 
-
-
-        Tweet tweetToDelete = getNotDeletedTweet(id);
-        tweetToDelete.setDeleted(true);
-        return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(tweetToDelete));
-
     }
 
     @Override
@@ -270,8 +255,8 @@ public class TweetServiceImpl implements TweetService {
             .saveAndFlush(reply));
 
 
-        Tweet tweetToGet = getNotDeletedTweet(id);
-        return tweetMapper.entityToTweetResponseDto(tweetToGet);
+//        Tweet tweetToGet = getNotDeletedTweet(id);
+//        return tweetMapper.entityToTweetResponseDto(tweetToGet);
     }
 
     private void getAllNotDeletedReplies(Tweet target, List<Tweet> allReplies) {
