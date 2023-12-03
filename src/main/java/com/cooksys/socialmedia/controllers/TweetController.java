@@ -1,6 +1,8 @@
 package com.cooksys.socialmedia.controllers;
 
+
 import com.cooksys.socialmedia.dtos.*;
+
 import com.cooksys.socialmedia.services.TweetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -70,7 +72,12 @@ public class TweetController {
     public List<HashtagDto> getTweetTags(@PathVariable(name = "id") Long id) {
         return tweetService.getTweetTags(id);
     }
-    
+
+    @PostMapping("/{id}/reply")
+    public TweetResponseDto createReplyTweet(@PathVariable Long id, @RequestBody TweetRequestDto tweetRequestDto) {
+        return tweetService.createReplyTweet(id, tweetRequestDto);
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{id}/repost")
     public TweetResponseDto repostTweet(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {

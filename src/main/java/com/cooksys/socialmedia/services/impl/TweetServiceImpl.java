@@ -1,6 +1,7 @@
 package com.cooksys.socialmedia.services.impl;
 
 import com.cooksys.socialmedia.dtos.*;
+
 import com.cooksys.socialmedia.entities.Credentials;
 import com.cooksys.socialmedia.entities.Hashtag;
 import com.cooksys.socialmedia.entities.Tweet;
@@ -61,7 +62,10 @@ public class TweetServiceImpl implements TweetService {
     }
 
 
-    private List<String> parseTweetContent(String content, String regex, boolean caseSensitive) {
+    private List<String> parseTweetContent(
+        String content,
+        String regex,
+        boolean caseSensitive) {
         Pattern pattern = Pattern.compile(regex);
         Matcher m = pattern.matcher(content);
 
@@ -73,12 +77,15 @@ public class TweetServiceImpl implements TweetService {
         return matches;
     }
 
+
     private void processMentionedUsers(Tweet tweetToSave) {
-        List<String> mentionedUsernames = parseTweetContent(tweetToSave.getContent(), "(?<=@)\\w+", true);
+        List<String> mentionedUsernames = parseTweetContent(tweetToSave
+            .getContent(), "(?<=@)\\w+", true);
         List<User> mentionedUsers = new ArrayList<>();
 
         for (String username : mentionedUsernames) {
-            Optional<User> optionalMentionedUser = userRepository.findByDeletedFalseAndCredentials_UsernameIgnoreCase(username);
+            Optional<User> optionalMentionedUser = userRepository
+                .findByDeletedFalseAndCredentials_UsernameIgnoreCase(username);
 
             if (optionalMentionedUser.isPresent()) {
                 mentionedUsers.add(optionalMentionedUser.get());
@@ -88,18 +95,22 @@ public class TweetServiceImpl implements TweetService {
         tweetToSave.setMentionedUsers(mentionedUsers);
     }
 
+
     private void processHashtags(Tweet tweetToSave) {
 
-        List<String> hashtagsFound = parseTweetContent(tweetToSave.getContent(), "#\\w+", false);
+        List<String> hashtagsFound = parseTweetContent(tweetToSave.getContent(),
+            "#\\w+", false);
         List<Hashtag> hashtags = new ArrayList<>();
 
         for (String label : hashtagsFound) {
-            Optional<Hashtag> optionalHashtag = hashtagRepository.findByLabel(label);
+            Optional<Hashtag> optionalHashtag = hashtagRepository.findByLabel(
+                label);
             Hashtag hashtag;
 
             if (optionalHashtag.isEmpty()) {
                 hashtag = new Hashtag(label);
-            } else {
+            }
+            else {
                 hashtag = optionalHashtag.get();
                 hashtag.setLastUsed(Timestamp.from(Instant.now()));
             }
@@ -110,33 +121,48 @@ public class TweetServiceImpl implements TweetService {
         tweetToSave.setHashtags(hashtags);
     }
 
+
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
 
-        Tweet tweetToSave = tweetMapper.tweetRequestDtoToEntity(tweetRequestDto);
+        Tweet tweetToSave = tweetMapper.tweetRequestDtoToEntity(
+            tweetRequestDto);
 
         if (tweetToSave.getContent() == null) {
             throw new BadRequestException("New tweet must have content");
         }
 
-        Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
-        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
+        Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto
+            .getCredentials());
+        Optional<User> optionalUser = userRepository.findByCredentials(
+            credentials);
 
         if (optionalUser.isEmpty() || optionalUser.get().isDeleted()) {
-            throw new NotAuthorizedException("User with given credentials does not exist");
+            throw new NotAuthorizedException(
+                "User with given credentials does not exist");
         }
 
         tweetToSave.setAuthor(optionalUser.get());
         processMentionedUsers(tweetToSave);
         processHashtags(tweetToSave);
 
-        return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(tweetToSave));
+        return tweetMapper.entityToTweetResponseDto(tweetRepository
+            .saveAndFlush(tweetToSave));
     }
+
 
     @Override
     public List<TweetResponseDto> getTweetReposts(Long id) {
 
+        Optional<Tweet> optionalRepostedTweet = tweetRepository
+            .findByIdAndDeletedFalse(id);
+
+        if (optionalRepostedTweet.isEmpty()) {
+            throw new NotFoundException("No tweet found with id: " + id);
+        }
+
         Tweet repostedTweet = getNotDeletedTweet(id);
+
         List<Tweet> notDeletedReposts = new ArrayList<>();
 
         for (Tweet tweet : repostedTweet.getReposts()) {
@@ -151,20 +177,26 @@ public class TweetServiceImpl implements TweetService {
     @Override
     public TweetResponseDto deleteTweet(Long id) {
 
-        Tweet tweetToDelete = getNotDeletedTweet(id);
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        Tweet tweetToDelete = optionalTweet.get();
+
         tweetToDelete.setDeleted(true);
-        return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(tweetToDelete));
+
+        return tweetMapper.entityToTweetResponseDto(tweetRepository
+            .saveAndFlush(tweetToDelete));
+
     }
 
     @Override
     public TweetResponseDto getTweetById(Long id) {
+
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
         if (optionalTweet.isEmpty()) {
             throw new NotFoundException("No Tweet found with id: " + id);
 
         }
         Tweet tweetToGet = optionalTweet.get();
-        
+
         return tweetMapper.entityToTweetResponseDto(tweetToGet);
     }
 
@@ -181,15 +213,44 @@ public class TweetServiceImpl implements TweetService {
         if (tweetWithTags.isDeleted() == true) {
             throw new NotAuthorizedException("Tweet has been deleted");
         }
-        
-        List<Hashtag> hashtags = hashtagRepository.findByTweets_Id(tweetWithTags.getId());
-        
+
+        List<Hashtag> hashtags = hashtagRepository.findByTweets_Id(tweetWithTags
+            .getId());
+
         return hashtagMapper.hashtagEntitiestoDtos(hashtags);
+    }
+
+
+    @Override
+    public TweetResponseDto createReplyTweet(
+        Long id,
+        TweetRequestDto tweetRequestDto) {
+
+        Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No Tweet found with id: " + id);
+        }
+        
+        Tweet tweetToReplyTo = optionalTweet.get();
+        
+        Credentials providedCredentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
+        Optional<User> optionalUser = userRepository.findByCredentials(providedCredentials);
+        
+        if(optionalUser.isEmpty()) {
+            throw new NotFoundException("No user found with provided credentials");
+        }
+        
+        Tweet reply = tweetMapper.tweetRequestDtoToEntity(tweetRequestDto);
+        reply.setAuthor(optionalUser.get());
+
+
+        reply.setInReplyTo(tweetToReplyTo);
+
+        return tweetMapper.entityToTweetResponseDto(tweetRepository
+            .saveAndFlush(reply));
 
 
 //        We think these two lines of code are a leftover from fixing merge conflicts:
-
-
 //        Tweet tweetToGet = getNotDeletedTweet(id);
 //        return tweetMapper.entityToTweetResponseDto(tweetToGet);
     }
@@ -236,6 +297,7 @@ public class TweetServiceImpl implements TweetService {
         context.setAfter(tweetMapper.entitiesToResponseDtos(afterContext));
 
         return context;
+
     }
 
     @Override
