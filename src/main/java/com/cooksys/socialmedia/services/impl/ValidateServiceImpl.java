@@ -15,4 +15,9 @@ public class ValidateServiceImpl implements ValidateService {
     public boolean validateUsernameExists(String username) {
         return userRepository.findByDeletedFalseAndCredentials_UsernameIgnoreCase(username).isPresent();
     }
+
+    @Override
+    public boolean validateUsernameAvailable(String username) {
+        return !(validateUsernameExists(username));
+    }
 }
