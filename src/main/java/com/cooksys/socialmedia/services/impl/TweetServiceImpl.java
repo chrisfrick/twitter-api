@@ -1,18 +1,6 @@
 package com.cooksys.socialmedia.services.impl;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.springframework.stereotype.Service;
-import com.cooksys.socialmedia.dtos.HashtagDto;
-import com.cooksys.socialmedia.dtos.ContextDto;
-import com.cooksys.socialmedia.dtos.CredentialsDto;
-import com.cooksys.socialmedia.dtos.TweetRequestDto;
-import com.cooksys.socialmedia.dtos.TweetResponseDto;
+import com.cooksys.socialmedia.dtos.*;
 import com.cooksys.socialmedia.entities.Credentials;
 import com.cooksys.socialmedia.entities.Hashtag;
 import com.cooksys.socialmedia.entities.Tweet;
@@ -23,6 +11,7 @@ import com.cooksys.socialmedia.exceptions.NotFoundException;
 import com.cooksys.socialmedia.mappers.CredentialsMapper;
 import com.cooksys.socialmedia.mappers.HashtagMapper;
 import com.cooksys.socialmedia.mappers.TweetMapper;
+import com.cooksys.socialmedia.mappers.UserMapper;
 import com.cooksys.socialmedia.repositories.HashtagRepository;
 import com.cooksys.socialmedia.repositories.TweetRepository;
 import com.cooksys.socialmedia.repositories.UserRepository;
@@ -44,13 +33,11 @@ import java.util.regex.Pattern;
 public class TweetServiceImpl implements TweetService {
 
     private final TweetMapper tweetMapper;
-
-    private final TweetRepository tweetRepository;
-    
     private final CredentialsMapper credentialsMapper;
-    
+    private final UserMapper userMapper;
     private final HashtagMapper hashtagMapper;
 
+    private final TweetRepository tweetRepository;
     private final UserRepository userRepository;
     private final HashtagRepository hashtagRepository;
 
@@ -198,6 +185,10 @@ public class TweetServiceImpl implements TweetService {
         
         return hashtagMapper.hashtagEntitiestoDtos(hashtags);
 
+
+//        We think these two lines of code are a leftover from fixing merge conflicts:
+
+
 //        Tweet tweetToGet = getNotDeletedTweet(id);
 //        return tweetMapper.entityToTweetResponseDto(tweetToGet);
     }
@@ -244,6 +235,22 @@ public class TweetServiceImpl implements TweetService {
         context.setAfter(tweetMapper.entitiesToResponseDtos(afterContext));
 
         return context;
+    }
+
+    @Override
+    public List<UserResponseDto> getMentionedUsers(Long id) {
+
+        Tweet tweet = getNotDeletedTweet(id);
+
+        List<User> notDeletedMentionedUsers = new ArrayList<>();
+
+        for (User u : tweet.getMentionedUsers()) {
+            if (!u.isDeleted()) {
+                notDeletedMentionedUsers.add(u);
+            }
+        }
+
+        return userMapper.entitiesToResponseDtos(notDeletedMentionedUsers);
     }
 
     @Override

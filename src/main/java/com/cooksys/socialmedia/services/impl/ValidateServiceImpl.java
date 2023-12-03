@@ -20,7 +20,13 @@ public class ValidateServiceImpl implements ValidateService {
     }
 
     @Override
+    public boolean validateUsernameAvailable(String username) {
+        return !(validateUsernameExists(username));
+    }
+  
+      @Override
     public boolean validateHashtagExists(String label) {
         return hashtagRepository.findByLabelIgnoreCase(label).isPresent();
     }
+  
 }
