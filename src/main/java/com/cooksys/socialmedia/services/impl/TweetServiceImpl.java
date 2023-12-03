@@ -1,19 +1,6 @@
 package com.cooksys.socialmedia.services.impl;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.springframework.stereotype.Service;
-import com.cooksys.socialmedia.dtos.HashtagDto;
-import com.cooksys.socialmedia.dtos.ContextDto;
-import com.cooksys.socialmedia.dtos.CredentialsDto;
-import com.cooksys.socialmedia.dtos.TweetRequestDto;
-import com.cooksys.socialmedia.dtos.TweetResponseDto;
-import com.cooksys.socialmedia.dtos.UserResponseDto;
+import com.cooksys.socialmedia.dtos.*;
 import com.cooksys.socialmedia.entities.Credentials;
 import com.cooksys.socialmedia.entities.Hashtag;
 import com.cooksys.socialmedia.entities.Tweet;
@@ -198,8 +185,10 @@ public class TweetServiceImpl implements TweetService {
         
         return hashtagMapper.hashtagEntitiestoDtos(hashtags);
 
-        Tweet tweetToGet = getNotDeletedTweet(id);
-        return tweetMapper.entityToTweetResponseDto(tweetToGet);
+//        We think these two lines of code are a leftover from fixing merge conflicts:
+
+//        Tweet tweetToGet = getNotDeletedTweet(id);
+//        return tweetMapper.entityToTweetResponseDto(tweetToGet);
     }
 
     private void getAllNotDeletedReplies(Tweet target, List<Tweet> allReplies) {
@@ -260,6 +249,7 @@ public class TweetServiceImpl implements TweetService {
         }
 
         return userMapper.entitiesToResponseDtos(notDeletedMentionedUsers);
+    }
 
     @Override
     public TweetResponseDto repostTweet(Long id, CredentialsDto credentialsDto) {
