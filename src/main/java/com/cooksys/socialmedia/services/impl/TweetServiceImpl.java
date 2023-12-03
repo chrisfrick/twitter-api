@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +41,7 @@ public class TweetServiceImpl implements TweetService {
     private final TweetRepository tweetRepository;
     private final UserRepository userRepository;
     private final HashtagRepository hashtagRepository;
+    private final UserMapper userMapper;
 
     @Override
     public List<TweetResponseDto> getAllTweets() {
@@ -235,6 +237,46 @@ public class TweetServiceImpl implements TweetService {
         context.setAfter(tweetMapper.entitiesToResponseDtos(afterContext));
 
         return context;
+    }
+
+    @Override
+    public void likeTweet(Long id, CredentialsDto credentialsDto) {
+        Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
+
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No tweet found with id: " + id);
+        }
+
+        Tweet tweet = optionalTweet.get();
+
+        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
+        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
+
+        if (optionalUser.isEmpty() || optionalUser.get().isDeleted()) {
+            throw new NotAuthorizedException("User with given credentials does not exist");
+        }
+
+        User user = optionalUser.get();
+
+        tweet.getLikedBy().add(user);
+
+        tweetRepository.save(tweet);
+    }
+
+    @Override
+    public List<UserResponseDto> getTweetLikes(Long id) {
+        Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
+
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No tweet found with id: " + id);
+        }
+
+        Tweet tweet = optionalTweet.get();
+
+        return tweet.getLikedBy().stream()
+                .filter(user -> !user.isDeleted())
+                .map(userMapper::entityToResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override

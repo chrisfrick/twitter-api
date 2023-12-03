@@ -48,7 +48,18 @@ public class TweetController {
     public ContextDto getTweetContext(@PathVariable Long id) {
         return tweetService.getTweetContext(id);
     }
-    
+
+    @PostMapping("/{id}/like")
+    @ResponseStatus(HttpStatus.OK)
+    public void likeTweet(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
+        tweetService.likeTweet(id, credentialsDto);
+    }
+
+    @GetMapping("/{id}/likes")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserResponseDto> getTweetLikes(@PathVariable Long id) {
+        return tweetService.getTweetLikes(id);
+    }
 
     @GetMapping("/{id}/mentions")
     public List<UserResponseDto> getMentionedUsers(@PathVariable Long id) {
