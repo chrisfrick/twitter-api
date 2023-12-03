@@ -41,7 +41,6 @@ public class TweetServiceImpl implements TweetService {
     private final TweetRepository tweetRepository;
     private final UserRepository userRepository;
     private final HashtagRepository hashtagRepository;
-    private final UserMapper userMapper;
 
     @Override
     public List<TweetResponseDto> getAllTweets() {
