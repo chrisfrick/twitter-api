@@ -15,6 +15,7 @@ import com.cooksys.socialmedia.dtos.ContextDto;
 import com.cooksys.socialmedia.dtos.CredentialsDto;
 import com.cooksys.socialmedia.dtos.TweetRequestDto;
 import com.cooksys.socialmedia.dtos.TweetResponseDto;
+import com.cooksys.socialmedia.dtos.UserResponseDto;
 import com.cooksys.socialmedia.entities.Hashtag;
 import com.cooksys.socialmedia.services.TweetService;
 import lombok.RequiredArgsConstructor;
@@ -64,16 +65,21 @@ public class TweetController {
         return tweetService.getTweetContext(id);
     }
     
+
+    @GetMapping("/{id}/mentions")
+    public List<UserResponseDto> getMentionedUsers(@PathVariable Long id) {
+        return tweetService.getMentionedUsers(id);
+
     @GetMapping("/{id}/tags")
     public List<HashtagDto> getTweetTags(@PathVariable(name = "id") Long id) {
         return tweetService.getTweetTags(id);
     }
     
-
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{id}/repost")
     public TweetResponseDto repostTweet(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
         return tweetService.repostTweet(id, credentialsDto);
+
     }
 
 }
