@@ -1,9 +1,7 @@
 package com.cooksys.socialmedia.services.impl;
 
-import com.cooksys.socialmedia.dtos.ContextDto;
-import com.cooksys.socialmedia.dtos.HashtagDto;
-import com.cooksys.socialmedia.dtos.TweetRequestDto;
-import com.cooksys.socialmedia.dtos.TweetResponseDto;
+import com.cooksys.socialmedia.dtos.*;
+
 import com.cooksys.socialmedia.entities.Credentials;
 import com.cooksys.socialmedia.entities.Hashtag;
 import com.cooksys.socialmedia.entities.Tweet;
@@ -30,21 +28,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class TweetServiceImpl implements TweetService {
 
     private final TweetMapper tweetMapper;
+    private final CredentialsMapper credentialsMapper;
+    private final UserMapper userMapper;
+    private final HashtagMapper hashtagMapper;
 
     private final TweetRepository tweetRepository;
-
-    private final CredentialsMapper credentialsMapper;
-
-    private final HashtagMapper hashtagMapper;
-    
-    private final UserMapper userMapper;
-
     private final UserRepository userRepository;
     private final HashtagRepository hashtagRepository;
 
@@ -255,6 +250,7 @@ public class TweetServiceImpl implements TweetService {
             .saveAndFlush(reply));
 
 
+//        We think these two lines of code are a leftover from fixing merge conflicts:
 //        Tweet tweetToGet = getNotDeletedTweet(id);
 //        return tweetMapper.entityToTweetResponseDto(tweetToGet);
     }
@@ -301,6 +297,84 @@ public class TweetServiceImpl implements TweetService {
         context.setAfter(tweetMapper.entitiesToResponseDtos(afterContext));
 
         return context;
+
+    }
+
+    @Override
+    public void likeTweet(Long id, CredentialsDto credentialsDto) {
+        Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
+
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No tweet found with id: " + id);
+        }
+
+        Tweet tweet = optionalTweet.get();
+
+        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
+        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
+
+        if (optionalUser.isEmpty() || optionalUser.get().isDeleted()) {
+            throw new NotAuthorizedException("User with given credentials does not exist");
+        }
+
+        User user = optionalUser.get();
+
+        tweet.getLikedBy().add(user);
+
+        tweetRepository.save(tweet);
+    }
+
+    @Override
+    public List<UserResponseDto> getTweetLikes(Long id) {
+        Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
+
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("No tweet found with id: " + id);
+        }
+
+        Tweet tweet = optionalTweet.get();
+
+        return tweet.getLikedBy().stream()
+                .filter(user -> !user.isDeleted())
+                .map(userMapper::entityToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserResponseDto> getMentionedUsers(Long id) {
+
+        Tweet tweet = getNotDeletedTweet(id);
+
+        List<User> notDeletedMentionedUsers = new ArrayList<>();
+
+        for (User u : tweet.getMentionedUsers()) {
+            if (!u.isDeleted()) {
+                notDeletedMentionedUsers.add(u);
+            }
+        }
+
+        return userMapper.entitiesToResponseDtos(notDeletedMentionedUsers);
+    }
+
+    @Override
+    public TweetResponseDto repostTweet(Long id, CredentialsDto credentialsDto) {
+
+        Tweet tweetToRepost = getNotDeletedTweet(id);
+        Credentials providedAuthorCredentials = credentialsMapper.dtoToEntity(credentialsDto);
+
+        // Unclear if username should be case-insensitive while looking up a user by credentials
+        // Here I've written it so that the username IS case-sensitive
+        Optional<User> optionalUser = userRepository.findByCredentialsAndDeletedFalse(providedAuthorCredentials);
+
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("No user found with provided credentials");
+        }
+
+        Tweet repostTweetToCreate = new Tweet();
+        repostTweetToCreate.setAuthor(optionalUser.get());
+        repostTweetToCreate.setRepostOf(tweetToRepost);
+
+        return tweetMapper.entityToTweetResponseDto(tweetRepository.saveAndFlush(repostTweetToCreate));
 
     }
 

@@ -32,7 +32,7 @@ public class UserController {
     public List<UserResponseDto> getAllUsers() {
         return userService.getAllUsers();
     }
-    
+
     @PatchMapping("/@{username}")
     public UserResponseDto updateUser(@PathVariable String username, @RequestBody Map<String, Object> request) {
         CredentialsDto credentialsDto = objectMapper.convertValue(request.get("credentials"), CredentialsDto.class);
@@ -44,7 +44,7 @@ public class UserController {
     public UserResponseDto deleteUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
         return userService.deleteUser(username, credentialsDto);
     }
-  
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public UserResponseDto createUser(@RequestBody UserRequestDto userRequestDto) {
