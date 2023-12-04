@@ -60,7 +60,8 @@ public class UserServiceImpl implements UserService {
         userToUpdate.setProfile(profileMapper.dtoToEntity(profileDto));
         userToUpdate.setCredentials(credentials);
         
-        return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToUpdate));        
+        return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToUpdate));
+
     }
 
     @Override
@@ -86,8 +87,10 @@ public class UserServiceImpl implements UserService {
         userToDelete.setDeleted(true);
         
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToDelete));
-      }
-  
+
+    }
+
+    @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
 
         if (userRequestDto.getCredentials() == null
@@ -116,5 +119,28 @@ public class UserServiceImpl implements UserService {
 
         User userToSave = userMapper.requestDtoToEntity(userRequestDto);
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToSave));
+    }
+
+    @Override
+    public void unfollowUser(String username, CredentialsDto credentialsDto) {
+        User follower = getUserByCredentials(credentialsDto);
+        User following = getUserByUsername(username);
+
+        if (!follower.getFollowing().contains(following)) {
+            throw new NotFoundException("No following relationship found");
+        }
+
+        follower.getFollowing().remove(following);
+        userRepository.saveAndFlush(follower);
+    }
+
+    private User getUserByCredentials(CredentialsDto credentialsDto) {
+        return userRepository.findByCredentials(credentialsMapper.dtoToEntity(credentialsDto))
+                .orElseThrow(() -> new NotFoundException("No user found with the provided credentials"));
+    }
+
+    private User getUserByUsername(String username) {
+        return userRepository.findByDeletedFalseAndCredentials_UsernameIgnoreCase(username)
+                .orElseThrow(() -> new NotFoundException("No followable user found with username: " + username));
     }
 }
