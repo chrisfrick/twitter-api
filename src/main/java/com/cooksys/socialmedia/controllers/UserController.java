@@ -35,44 +35,44 @@ public class UserController {
     }
     
     @PatchMapping("/@{username}")
-    public UserResponseDto updateUser(@PathVariable String username, @RequestBody Map<String, Object> request) {
+    public UserResponseDto updateUser(@PathVariable("username") String username, @RequestBody Map<String, Object> request) {
         CredentialsDto credentialsDto = objectMapper.convertValue(request.get("credentials"), CredentialsDto.class);
         ProfileDto profileDto = objectMapper.convertValue(request.get("profile"), ProfileDto.class);
         return userService.updateUser(username, credentialsDto, profileDto);
     }
     
     @DeleteMapping("/@{username}")
-    public UserResponseDto deleteUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
+    public UserResponseDto deleteUser(@PathVariable("username") String username, @RequestBody CredentialsDto credentialsDto) {
         return userService.deleteUser(username, credentialsDto);
     }
     
     @GetMapping("/@{username}")
-    public UserResponseDto getUser(@PathVariable String username) {
+    public UserResponseDto getUser(@PathVariable("username") String username) {
         return userService.getUser(username);
     }
     
     @GetMapping("/@{username}/following")
-    public List<UserResponseDto> getFollowers(@PathVariable String username) {
+    public List<UserResponseDto> getFollowers(@PathVariable("username") String username) {
         return userService.getFollowing(username);
     }
     
     @GetMapping("/@{username}/followers")
-    public List<UserResponseDto> getFollowing(@PathVariable String username) {
+    public List<UserResponseDto> getFollowing(@PathVariable("username") String username) {
         return userService.getFollowers(username);
     }
     
     @GetMapping("/@{username}/tweets")
-    public List<TweetResponseDto> getUserTweets(@PathVariable String username) {
+    public List<TweetResponseDto> getUserTweets(@PathVariable("username") String username) {
         return userService.getUserTweets(username);
     }
     
     @GetMapping("/@{username}/feed")
-    public List<TweetResponseDto> getUserFeed(@PathVariable String username) {
+    public List<TweetResponseDto> getUserFeed(@PathVariable("username") String username) {
         return userService.getUserFeed(username);
     }
     
     @GetMapping("/@{username}/mentions")
-    public List<TweetResponseDto> getUserMentions(@PathVariable String username) {
+    public List<TweetResponseDto> getUserMentions(@PathVariable("username") String username) {
         return userService.getUserMentions(username);
     }
 
@@ -83,13 +83,13 @@ public class UserController {
     }
     
     @PostMapping("/@{username}/follow")
-    public void followUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
+    public void followUser(@PathVariable("username") String username, @RequestBody CredentialsDto credentialsDto) {
         userService.followUser(username, credentialsDto);
     }
 
     @PostMapping("/{username}/unfollow")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void unfollowUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
+    public void unfollowUser(@PathVariable("username") String username, @RequestBody CredentialsDto credentialsDto) {
         userService.unfollowUser(username, credentialsDto);
     }
   

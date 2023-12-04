@@ -2,6 +2,7 @@ package com.cooksys.socialmedia.services.impl;
 
 import com.cooksys.socialmedia.dtos.*;
 import com.cooksys.socialmedia.entities.Credentials;
+import com.cooksys.socialmedia.entities.Profile;
 import com.cooksys.socialmedia.entities.Tweet;
 import com.cooksys.socialmedia.entities.User;
 import com.cooksys.socialmedia.exceptions.BadRequestException;
@@ -49,31 +50,42 @@ public class UserServiceImpl implements UserService {
                 "No Credentials given. Please provide credentials");
 
         }
-        Optional<Credentials> optionalCredentials = Optional.of(
-            credentialsMapper.dtoToEntity(credentialsDto));
-        Credentials credentials = optionalCredentials.get();
-        Optional<User> optionalUser = userRepository.findByCredentials(
-            credentials);
-        if (optionalUser.isEmpty()) {
-            System.out.println(userRepository.findByCredentials(credentials));
-            throw new NotFoundException("No User found with Username: "
-                + credentials.getUsername());
-
+        if (profileDto == null) {
+            throw new NotFoundException(
+                "No Profile given. Please provide profile");
         }
+// Optional<Credentials> optionalCredentials = Optional.of(
+// credentialsMapper.dtoToEntity(credentialsDto));
+        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
+        Optional<User> optionalUser = userRepository.findByCredentials(
+            credentialsMapper.dtoToEntity(credentialsDto));
         if (optionalUser.isEmpty()) {
-            System.out.println(userRepository.findByCredentials(credentials));
             throw new NotFoundException("No User found with Username: "
                 + credentials.getUsername());
 
         }
         User userToUpdate = optionalUser.get();
-        userToUpdate.setProfile(profileMapper.dtoToEntity(profileDto));
-        userToUpdate.setCredentials(credentials);
+        
+        Profile profile = profileMapper.dtoToEntity(profileDto);
+        if (profile.getFirstName() != null) {
+            userToUpdate.getProfile().setFirstName(profile.getFirstName());
+        }
+        if (profile.getLastName() != null) {
+            userToUpdate.getProfile().setLastName(profile.getLastName());
+        }
+        if (profile.getEmail() != null) {
+            userToUpdate.getProfile().setEmail(profile.getEmail());
+        }
+        if (profile.getPhone() != null) {
+            userToUpdate.getProfile().setPhone(profile.getPhone());
+        }
+
 
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(
             userToUpdate));
 
     }
+
 
     @Override
     public UserResponseDto deleteUser(
@@ -106,6 +118,7 @@ public class UserServiceImpl implements UserService {
             userToDelete));
     }
 
+
     @Override
     public UserResponseDto getUser(String username) {
 
@@ -120,6 +133,7 @@ public class UserServiceImpl implements UserService {
 
         return userMapper.entityToResponseDto(optionalUser.get());
     }
+
 
     @Override
     public List<UserResponseDto> getFollowers(String username) {
@@ -173,7 +187,6 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
     @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
 
@@ -211,15 +224,16 @@ public class UserServiceImpl implements UserService {
             userToSave));
     }
 
+
     @Override
     public List<TweetResponseDto> getUserTweets(String username) {
 
         Optional<User> optionalUser = userRepository
-                .findByCredentials_UsernameAndDeletedFalse(username);
+            .findByCredentials_UsernameAndDeletedFalse(username);
 
         if (optionalUser.isEmpty()) {
             throw new NotFoundException("No User found with Username: "
-                    + username);
+                + username);
 
         }
         User userWithTweets = optionalUser.get();
@@ -229,6 +243,7 @@ public class UserServiceImpl implements UserService {
 
         return tweetMapper.entitiesToResponseDtos(tweets);
     }
+
 
     @Override
     public List<TweetResponseDto> getUserFeed(String username) {
@@ -255,21 +270,23 @@ public class UserServiceImpl implements UserService {
     public List<TweetResponseDto> getUserMentions(String username) {
 
         Optional<User> optionalUser = userRepository
-                .findByCredentials_UsernameAndDeletedFalse(username);
+            .findByCredentials_UsernameAndDeletedFalse(username);
 
         if (optionalUser.isEmpty()) {
             throw new NotFoundException("No User found with Username: "
-                    + username);
+                + username);
 
         }
         User userMentioned = optionalUser.get();
 
-        List<Tweet> tweets = tweetRepository.findAllByDeletedFalseOrderByPostedDesc();
+        List<Tweet> tweets = tweetRepository
+            .findAllByDeletedFalseOrderByPostedDesc();
         List<Tweet> tweetsWhereUserMentioned = new ArrayList<Tweet>();
 
         for (Tweet tweet : tweets) {
 
-            Optional<String> optionalContent = Optional.ofNullable(tweet.getContent());
+            Optional<String> optionalContent = Optional.ofNullable(tweet
+                .getContent());
             if (!(optionalContent.isEmpty())) {
 
                 String content = tweet.getContent();
@@ -284,6 +301,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
+
     @Override
     public void unfollowUser(String username, CredentialsDto credentialsDto) {
         User follower = getUserByCredentials(credentialsDto);
@@ -297,14 +315,19 @@ public class UserServiceImpl implements UserService {
         userRepository.saveAndFlush(follower);
     }
 
+
     private User getUserByCredentials(CredentialsDto credentialsDto) {
-        return userRepository.findByCredentials(credentialsMapper.dtoToEntity(credentialsDto))
-                .orElseThrow(() -> new NotFoundException("No user found with the provided credentials"));
+        return userRepository.findByCredentials(credentialsMapper.dtoToEntity(
+            credentialsDto)).orElseThrow(() -> new NotFoundException(
+                "No user found with the provided credentials"));
     }
 
+
     private User getUserByUsername(String username) {
-        return userRepository.findByDeletedFalseAndCredentials_UsernameIgnoreCase(username)
-                .orElseThrow(() -> new NotFoundException("No followable user found with username: " + username));
+        return userRepository
+            .findByDeletedFalseAndCredentials_UsernameIgnoreCase(username)
+            .orElseThrow(() -> new NotFoundException(
+                "No followable user found with username: " + username));
     }
 
 
@@ -312,26 +335,30 @@ public class UserServiceImpl implements UserService {
     public void followUser(String username, CredentialsDto credentialsDto) {
 
         Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
-        Optional<User> optionalUserWithCredentials = userRepository.findByCredentials_UsernameAndDeletedFalse(credentials.getUsername());
-        
+        Optional<User> optionalUserWithCredentials = userRepository
+            .findByCredentials_UsernameAndDeletedFalse(credentials
+                .getUsername());
+
         if (optionalUserWithCredentials.isEmpty()) {
             throw new NotFoundException("No User found with Credentials: "
                 + credentials);
         }
-        
+
         User userWithCredentials = optionalUserWithCredentials.get();
-        
-        Optional<User> optionalUserToFollow = userRepository.findByCredentials_UsernameIgnoreCase(username);
-        
+
+        Optional<User> optionalUserToFollow = userRepository
+            .findByCredentials_UsernameIgnoreCase(username);
+
         if (optionalUserToFollow.isEmpty()) {
             throw new NotFoundException("No User found with Username: "
                 + username);
         }
-        
+
         User userToFollow = optionalUserToFollow.get();
-        
+
         if (userWithCredentials.getFollowing().contains(userToFollow)) {
-            throw new BadRequestException("User with credentials: " + credentials + " is already following User: " + username);
+            throw new BadRequestException("User with credentials: "
+                + credentials + " is already following User: " + username);
         }
         else {
             userWithCredentials.getFollowing().add(userToFollow);
@@ -339,10 +366,10 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.saveAndFlush(userWithCredentials);
         userRepository.saveAndFlush(userToFollow);
-        
-        //End point says to return no data on success. Maybe there's a better way to do that?
-        //return null;
-        
-        
+
+        // End point says to return no data on success. Maybe there's a better
+        // way to do that?
+        // return null;
+
     }
 }
