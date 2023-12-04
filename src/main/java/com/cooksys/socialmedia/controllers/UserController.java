@@ -65,6 +65,16 @@ public class UserController {
     public List<TweetResponseDto> getUserTweets(@PathVariable String username) {
         return userService.getUserTweets(username);
     }
+    
+    @GetMapping("/@{username}/feed")
+    public List<TweetResponseDto> getUserFeed(@PathVariable String username) {
+        return userService.getUserFeed(username);
+    }
+    
+    @GetMapping("/@{username}/mentions")
+    public List<TweetResponseDto> getUserMentions(@PathVariable String username) {
+        return userService.getUserMentions(username);
+    }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping

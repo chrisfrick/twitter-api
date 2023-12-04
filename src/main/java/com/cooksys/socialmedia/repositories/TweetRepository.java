@@ -10,11 +10,20 @@ import java.util.Optional;
 @Repository
 public interface TweetRepository extends JpaRepository<Tweet, Long> {
 
-
     List<Tweet> findAllByDeletedFalseOrderByPostedDesc();
 
+
     Optional<Tweet> findByIdAndDeletedFalse(Long id);
-    
-    List<Tweet> findByAuthorAndDeletedOrderByPostedDesc(User author, boolean deleted);
+
+
+    List<Tweet> findByAuthorAndDeletedOrderByPostedDesc(
+        User author,
+        boolean deleted);
+
+
+    List<Tweet> findByAuthorOrAuthorInAndDeletedOrderByPostedDesc(
+        User author,
+        List<User> following,
+        boolean deleted);
 
 }

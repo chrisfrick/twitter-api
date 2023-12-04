@@ -73,7 +73,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(
             userToUpdate));
 
-        
     }
 
     @Override
@@ -160,54 +159,60 @@ public class UserServiceImpl implements UserService {
 
         }
         User userWithFollowingList = optionalUser.get();
-        
+
         List<User> following = new ArrayList<User>();
-        
+
         for (User user : userWithFollowingList.getFollowing()) {
-            
+
             if (!(user.isDeleted())) {
                 following.add(user);
             }
         }
-        
+
         return userMapper.entitiesToResponseDtos(following);
-}
+    }
+
 
 
     @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
 
-        if (userRequestDto.getCredentials() == null
-                || userRequestDto.getProfile() == null
-                || userRequestDto.getCredentials().getUsername() == null
-                || userRequestDto.getCredentials().getPassword() == null
-                || userRequestDto.getProfile().getEmail() == null) {
-            throw new BadRequestException("Username, password, and email are required");
+        if (userRequestDto.getCredentials() == null || userRequestDto
+            .getProfile() == null || userRequestDto.getCredentials()
+                .getUsername() == null || userRequestDto.getCredentials()
+                    .getPassword() == null || userRequestDto.getProfile()
+                        .getEmail() == null) {
+            throw new BadRequestException(
+                "Username, password, and email are required");
         }
 
         String username = userRequestDto.getCredentials().getUsername();
-        Optional<User> optionalExistingUser = userRepository.findByCredentials_UsernameIgnoreCase(username);
+        Optional<User> optionalExistingUser = userRepository
+            .findByCredentials_UsernameIgnoreCase(username);
 
-        if(optionalExistingUser.isPresent()) {
+        if (optionalExistingUser.isPresent()) {
             User existingUser = optionalExistingUser.get();
 
             if (existingUser.isDeleted()) {
-                existingUser.setDeleted(false);     // Re-activate existing user
-//                 Should this path also update the re-activated user's profile info
-//                 if the request body differs from what's in the db?
-                return userMapper.entityToResponseDto(userRepository.saveAndFlush(existingUser));
-            } else {
-                throw new BadRequestException("Username " + username + " is unavailable");
+                existingUser.setDeleted(false); // Re-activate existing user
+// Should this path also update the re-activated user's profile info
+// if the request body differs from what's in the db?
+                return userMapper.entityToResponseDto(userRepository
+                    .saveAndFlush(existingUser));
+            }
+            else {
+                throw new BadRequestException("Username " + username
+                    + " is unavailable");
             }
         }
 
         User userToSave = userMapper.requestDtoToEntity(userRequestDto);
-        return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToSave));
+        return userMapper.entityToResponseDto(userRepository.saveAndFlush(
+            userToSave));
     }
 
     @Override
     public List<TweetResponseDto> getUserTweets(String username) {
-
 
         Optional<User> optionalUser = userRepository
                 .findByCredentials_UsernameAndDeletedFalse(username);
@@ -219,10 +224,63 @@ public class UserServiceImpl implements UserService {
         }
         User userWithTweets = optionalUser.get();
 
-        List<Tweet> tweets = tweetRepository.findByAuthorAndDeletedOrderByPostedDesc(userWithTweets, false);
+        List<Tweet> tweets = tweetRepository
+            .findByAuthorAndDeletedOrderByPostedDesc(userWithTweets, false);
 
         return tweetMapper.entitiesToResponseDtos(tweets);
     }
+
+    @Override
+    public List<TweetResponseDto> getUserFeed(String username) {
+
+        Optional<User> optionalUser = userRepository
+            .findByCredentials_UsernameAndDeletedFalse(username);
+
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("No User found with Username: "
+                + username);
+
+        }
+        User userWithFeed = optionalUser.get();
+
+        List<Tweet> tweets = tweetRepository
+            .findByAuthorOrAuthorInAndDeletedOrderByPostedDesc(userWithFeed,
+                userWithFeed.getFollowing(), false);
+
+        return tweetMapper.entitiesToResponseDtos(tweets);
+    }
+
+
+    @Override
+    public List<TweetResponseDto> getUserMentions(String username) {
+
+        Optional<User> optionalUser = userRepository
+            .findByCredentials_UsernameAndDeletedFalse(username);
+
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("No User found with Username: "
+                + username);
+
+        }
+        User userMentioned = optionalUser.get();
+        
+        List<Tweet> tweets = tweetRepository.findAllByDeletedFalseOrderByPostedDesc();
+        List<Tweet> tweetsWhereUserMentioned = new ArrayList<Tweet>();
+        
+        for (Tweet tweet : tweets) {
+            
+            Optional<String> optionalContent = Optional.ofNullable(tweet.getContent());
+            if (!(optionalContent.isEmpty())) {
+                
+                String content = tweet.getContent();
+                
+                if (content.contains("@" + username)) {
+                    tweetsWhereUserMentioned.add(tweet);
+                }
+            }
+        }
+        
+        return tweetMapper.entitiesToResponseDtos(tweetsWhereUserMentioned);
 
     @Override
     public void unfollowUser(String username, CredentialsDto credentialsDto) {
@@ -245,6 +303,5 @@ public class UserServiceImpl implements UserService {
     private User getUserByUsername(String username) {
         return userRepository.findByDeletedFalseAndCredentials_UsernameIgnoreCase(username)
                 .orElseThrow(() -> new NotFoundException("No followable user found with username: " + username));
-
     }
 }
