@@ -45,18 +45,6 @@ public class UserController {
         return userService.deleteUser(username, credentialsDto);
     }
 
-    @PatchMapping("/@{username}")
-    public UserResponseDto updateUser(@PathVariable String username, @RequestBody Map<String, Object> request) {
-        CredentialsDto credentialsDto = objectMapper.convertValue(request.get("credentials"), CredentialsDto.class);
-        ProfileDto profileDto = objectMapper.convertValue(request.get("profile"), ProfileDto.class);
-        return userService.updateUser(username, credentialsDto, profileDto);
-    }
-    
-    @DeleteMapping("/@{username}")
-    public UserResponseDto deleteUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
-        return userService.deleteUser(username, credentialsDto);
-    }
-
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public UserResponseDto createUser(@RequestBody UserRequestDto userRequestDto) {
