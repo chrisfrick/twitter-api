@@ -335,9 +335,7 @@ public class UserServiceImpl implements UserService {
     public void followUser(String username, CredentialsDto credentialsDto) {
 
         Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
-        Optional<User> optionalUserWithCredentials = userRepository
-            .findByCredentials_UsernameAndDeletedFalse(credentials
-                .getUsername());
+        Optional<User> optionalUserWithCredentials = userRepository.findByCredentials(credentials);
 
         if (optionalUserWithCredentials.isEmpty()) {
             throw new NotFoundException("No User found with Credentials: "
