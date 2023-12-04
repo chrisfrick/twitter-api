@@ -248,11 +248,6 @@ public class TweetServiceImpl implements TweetService {
 
         return tweetMapper.entityToTweetResponseDto(tweetRepository
             .saveAndFlush(reply));
-
-
-//        We think these two lines of code are a leftover from fixing merge conflicts:
-//        Tweet tweetToGet = getNotDeletedTweet(id);
-//        return tweetMapper.entityToTweetResponseDto(tweetToGet);
     }
 
     private void getAllNotDeletedReplies(Tweet target, List<Tweet> allReplies) {
