@@ -87,8 +87,10 @@ public class UserServiceImpl implements UserService {
         userToDelete.setDeleted(true);
         
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(userToDelete));
+
     }
 
+    @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
 
         if (userRequestDto.getCredentials() == null
