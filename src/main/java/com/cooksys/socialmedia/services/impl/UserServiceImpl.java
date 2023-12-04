@@ -306,4 +306,43 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByDeletedFalseAndCredentials_UsernameIgnoreCase(username)
                 .orElseThrow(() -> new NotFoundException("No followable user found with username: " + username));
     }
+
+
+    @Override
+    public void followUser(String username, CredentialsDto credentialsDto) {
+
+        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
+        Optional<User> optionalUserWithCredentials = userRepository.findByCredentials_UsernameAndDeletedFalse(credentials.getUsername());
+        
+        if (optionalUserWithCredentials.isEmpty()) {
+            throw new NotFoundException("No User found with Credentials: "
+                + credentials);
+        }
+        
+        User userWithCredentials = optionalUserWithCredentials.get();
+        
+        Optional<User> optionalUserToFollow = userRepository.findByCredentials_UsernameIgnoreCase(username);
+        
+        if (optionalUserToFollow.isEmpty()) {
+            throw new NotFoundException("No User found with Username: "
+                + username);
+        }
+        
+        User userToFollow = optionalUserToFollow.get();
+        
+        if (userWithCredentials.getFollowing().contains(userToFollow)) {
+            throw new BadRequestException("User with credentials: " + credentials + " is already following User: " + username);
+        }
+        else {
+            userWithCredentials.getFollowing().add(userToFollow);
+            userToFollow.getFollowers().add(userWithCredentials);
+        }
+        userRepository.saveAndFlush(userWithCredentials);
+        userRepository.saveAndFlush(userToFollow);
+        
+        //End point says to return no data on success. Maybe there's a better way to do that?
+        //return null;
+        
+        
+    }
 }
