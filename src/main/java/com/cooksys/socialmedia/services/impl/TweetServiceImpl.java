@@ -188,18 +188,14 @@ public class TweetServiceImpl implements TweetService {
     @Override
     public TweetResponseDto getTweetById(Long id) {
         Tweet tweetToGet = getNotDeletedTweet(id);
+
         return tweetMapper.entityToTweetResponseDto(tweetToGet);
     }
   
     @Override
     public List<HashtagDto> getTweetTags(Long id) {
 
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (optionalTweet.isEmpty()) {
-            throw new NotFoundException("No Tweet found with id: " + id);
-
-        }
-        Tweet tweetWithTags = optionalTweet.get();
+        Tweet tweetWithTags = getNotDeletedTweet(id);
         if (tweetWithTags.isDeleted() == true) {
             throw new NotAuthorizedException("Tweet has been deleted");
         }
@@ -259,6 +255,23 @@ public class TweetServiceImpl implements TweetService {
         }
 
         return tweetMapper.entitiesToResponseDtos(notDeletedReplies);
+    }
+
+    @Override
+    public List<TweetResponseDto> getTweetReplies(Long id) {
+
+        Tweet tweetWithReplies = getNotDeletedTweet(id);
+        
+        List<Tweet> notDeletedReplies = new ArrayList<>();
+
+        for (Tweet tweet : tweetWithReplies.getReplies()) {
+            if (!tweet.isDeleted()) {
+                notDeletedReplies.add(tweet);
+            }
+        }
+
+        return tweetMapper.entitiesToResponseDtos(notDeletedReplies);
+
     }
 
     private void getAllNotDeletedReplies(Tweet target, List<Tweet> allReplies) {
