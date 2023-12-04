@@ -28,7 +28,7 @@ public class HashtagServiceImpl implements HashtagService {
     @Override
     public List<TweetResponseDto> getTweetsByTag(String label) {
 
-        Optional<Hashtag> optionalHashtag = hashtagRepository.findByLabelIgnoreCase("#" + label.toLowerCase());
+        Optional<Hashtag> optionalHashtag = hashtagRepository.findByLabelIgnoreCase(label);
 
         if (optionalHashtag.isEmpty()) {
             throw new NotFoundException("No hashtag found with label: " + label);

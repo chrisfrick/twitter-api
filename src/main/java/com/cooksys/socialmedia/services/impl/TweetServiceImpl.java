@@ -24,8 +24,10 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -99,7 +101,7 @@ public class TweetServiceImpl implements TweetService {
     private void processHashtags(Tweet tweetToSave) {
 
         List<String> hashtagsFound = parseTweetContent(tweetToSave.getContent(),
-            "#\\w+", false);
+            "(?<=#)\\w+", true);
         List<Hashtag> hashtags = new ArrayList<>();
 
         for (String label : hashtagsFound) {
@@ -317,8 +319,10 @@ public class TweetServiceImpl implements TweetService {
         User user = optionalUser.get();
 
         tweet.getLikedBy().add(user);
+        user.getUserLikes().add(tweet);
 
         tweetRepository.save(tweet);
+        userRepository.save(user);
     }
 
     @Override
@@ -331,10 +335,18 @@ public class TweetServiceImpl implements TweetService {
 
         Tweet tweet = optionalTweet.get();
 
-        return tweet.getLikedBy().stream()
-                .filter(user -> !user.isDeleted())
-                .map(userMapper::entityToResponseDto)
-                .collect(Collectors.toList());
+//        return tweet.getLikedBy().stream()
+//                .filter(user -> !user.isDeleted())
+//                .map(userMapper::entityToResponseDto)
+//                .collect(Collectors.toList());
+        Set<User> likers = new HashSet<User>();
+        
+        for (User user : tweet.getLikedBy()) {
+            if (!user.isDeleted()) {
+                likers.add(user);
+            }
+        }
+        return userMapper.entitiesToResponseDtos(new ArrayList<User>(likers));
     }
 
     @Override

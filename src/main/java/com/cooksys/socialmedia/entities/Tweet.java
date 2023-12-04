@@ -49,7 +49,7 @@ public class Tweet {
     private List<User> mentionedUsers;
 
     @ManyToMany(mappedBy = "userLikes")
-    private Set<User> likedBy;
+    private List<User> likedBy;
     
     @ManyToMany
     @JoinTable(
