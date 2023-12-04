@@ -29,4 +29,6 @@ public interface UserService {
 
     List<TweetResponseDto> getUserMentions(String username);
 
+    void unfollowUser(String username, CredentialsDto credentialsDto);
+
 }
