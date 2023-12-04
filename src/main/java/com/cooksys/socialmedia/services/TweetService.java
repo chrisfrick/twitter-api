@@ -24,8 +24,6 @@ public interface TweetService {
 
     ContextDto getTweetContext(Long id);
 
-    ContextDto getTweetContext(Long id);
-
     void likeTweet(Long id, CredentialsDto credentialsDto);
 
     List<UserResponseDto> getTweetLikes(Long id);
