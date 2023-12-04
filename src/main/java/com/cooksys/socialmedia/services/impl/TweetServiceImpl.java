@@ -242,7 +242,6 @@ public class TweetServiceImpl implements TweetService {
             .saveAndFlush(reply));
     }
 
-
     @Override
     public List<TweetResponseDto> getTweetReplies(Long id) {
 
@@ -264,56 +263,6 @@ public class TweetServiceImpl implements TweetService {
 
         return tweetMapper.entitiesToResponseDtos(notDeletedReplies);
 
-    }
-
-
-    @Override
-    public List<HashtagDto> getTweetTags(Long id) {
-
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (optionalTweet.isEmpty()) {
-            throw new NotFoundException("No Tweet found with id: " + id);
-
-        }
-        Tweet tweetWithTags = optionalTweet.get();
-        if (tweetWithTags.isDeleted() == true) {
-            throw new NotAuthorizedException("Tweet has been deleted");
-        }
-
-        List<Hashtag> hashtags = hashtagRepository.findByTweets_Id(tweetWithTags
-            .getId());
-
-        return hashtagMapper.hashtagEntitiestoDtos(hashtags);
-    }
-
-
-    @Override
-    public TweetResponseDto createReplyTweet(
-        Long id,
-        TweetRequestDto tweetRequestDto) {
-
-        Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
-        if (optionalTweet.isEmpty()) {
-            throw new NotFoundException("No Tweet found with id: " + id);
-        }
-        
-        Tweet tweetToReplyTo = optionalTweet.get();
-        
-        Credentials providedCredentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
-        Optional<User> optionalUser = userRepository.findByCredentials(providedCredentials);
-        
-        if(optionalUser.isEmpty()) {
-            throw new NotFoundException("No user found with provided credentials");
-        }
-        
-        Tweet reply = tweetMapper.tweetRequestDtoToEntity(tweetRequestDto);
-        reply.setAuthor(optionalUser.get());
-
-
-        reply.setInReplyTo(tweetToReplyTo);
-
-        return tweetMapper.entityToTweetResponseDto(tweetRepository
-            .saveAndFlush(reply));
     }
 
     private void getAllNotDeletedReplies(Tweet target, List<Tweet> allReplies) {
