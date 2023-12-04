@@ -86,4 +86,11 @@ public class UserController {
     public void followUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
         userService.followUser(username, credentialsDto);
     }
+
+    @PostMapping("/{username}/unfollow")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unfollowUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
+        userService.unfollowUser(username, credentialsDto);
+    }
+  
 }

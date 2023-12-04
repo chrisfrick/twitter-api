@@ -1,25 +1,21 @@
 package com.cooksys.socialmedia.services.impl;
 
-import com.cooksys.socialmedia.dtos.CredentialsDto;
-import com.cooksys.socialmedia.dtos.ProfileDto;
-import com.cooksys.socialmedia.dtos.TweetResponseDto;
-import com.cooksys.socialmedia.dtos.UserResponseDto;
+import com.cooksys.socialmedia.dtos.*;
 import com.cooksys.socialmedia.entities.Credentials;
-import com.cooksys.socialmedia.entities.Profile;
 import com.cooksys.socialmedia.entities.Tweet;
 import com.cooksys.socialmedia.entities.User;
+import com.cooksys.socialmedia.exceptions.BadRequestException;
 import com.cooksys.socialmedia.exceptions.NotFoundException;
 import com.cooksys.socialmedia.mappers.CredentialsMapper;
 import com.cooksys.socialmedia.mappers.ProfileMapper;
 import com.cooksys.socialmedia.mappers.TweetMapper;
-import com.cooksys.socialmedia.dtos.UserRequestDto;
-import com.cooksys.socialmedia.exceptions.BadRequestException;
 import com.cooksys.socialmedia.mappers.UserMapper;
 import com.cooksys.socialmedia.repositories.TweetRepository;
 import com.cooksys.socialmedia.repositories.UserRepository;
 import com.cooksys.socialmedia.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -79,7 +75,6 @@ public class UserServiceImpl implements UserService {
 
     }
 
-
     @Override
     public UserResponseDto deleteUser(
         String username,
@@ -111,7 +106,6 @@ public class UserServiceImpl implements UserService {
             userToDelete));
     }
 
-
     @Override
     public UserResponseDto getUser(String username) {
 
@@ -126,7 +120,6 @@ public class UserServiceImpl implements UserService {
 
         return userMapper.entityToResponseDto(optionalUser.get());
     }
-
 
     @Override
     public List<UserResponseDto> getFollowers(String username) {
@@ -180,6 +173,8 @@ public class UserServiceImpl implements UserService {
     }
 
 
+
+    @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
 
         if (userRequestDto.getCredentials() == null || userRequestDto
@@ -216,16 +211,15 @@ public class UserServiceImpl implements UserService {
             userToSave));
     }
 
-
     @Override
     public List<TweetResponseDto> getUserTweets(String username) {
 
         Optional<User> optionalUser = userRepository
-            .findByCredentials_UsernameAndDeletedFalse(username);
+                .findByCredentials_UsernameAndDeletedFalse(username);
 
         if (optionalUser.isEmpty()) {
             throw new NotFoundException("No User found with Username: "
-                + username);
+                    + username);
 
         }
         User userWithTweets = optionalUser.get();
@@ -235,7 +229,6 @@ public class UserServiceImpl implements UserService {
 
         return tweetMapper.entitiesToResponseDtos(tweets);
     }
-
 
     @Override
     public List<TweetResponseDto> getUserFeed(String username) {
@@ -262,31 +255,56 @@ public class UserServiceImpl implements UserService {
     public List<TweetResponseDto> getUserMentions(String username) {
 
         Optional<User> optionalUser = userRepository
-            .findByCredentials_UsernameAndDeletedFalse(username);
+                .findByCredentials_UsernameAndDeletedFalse(username);
 
         if (optionalUser.isEmpty()) {
             throw new NotFoundException("No User found with Username: "
-                + username);
+                    + username);
 
         }
-        
+        User userMentioned = optionalUser.get();
+
         List<Tweet> tweets = tweetRepository.findAllByDeletedFalseOrderByPostedDesc();
         List<Tweet> tweetsWhereUserMentioned = new ArrayList<Tweet>();
-        
+
         for (Tweet tweet : tweets) {
-            
+
             Optional<String> optionalContent = Optional.ofNullable(tweet.getContent());
             if (!(optionalContent.isEmpty())) {
-                
+
                 String content = tweet.getContent();
-                
+
                 if (content.contains("@" + username)) {
                     tweetsWhereUserMentioned.add(tweet);
                 }
             }
         }
-        
+
         return tweetMapper.entitiesToResponseDtos(tweetsWhereUserMentioned);
+
+    }
+
+    @Override
+    public void unfollowUser(String username, CredentialsDto credentialsDto) {
+        User follower = getUserByCredentials(credentialsDto);
+        User following = getUserByUsername(username);
+
+        if (!follower.getFollowing().contains(following)) {
+            throw new NotFoundException("No following relationship found");
+        }
+
+        follower.getFollowing().remove(following);
+        userRepository.saveAndFlush(follower);
+    }
+
+    private User getUserByCredentials(CredentialsDto credentialsDto) {
+        return userRepository.findByCredentials(credentialsMapper.dtoToEntity(credentialsDto))
+                .orElseThrow(() -> new NotFoundException("No user found with the provided credentials"));
+    }
+
+    private User getUserByUsername(String username) {
+        return userRepository.findByDeletedFalseAndCredentials_UsernameIgnoreCase(username)
+                .orElseThrow(() -> new NotFoundException("No followable user found with username: " + username));
     }
 
 
