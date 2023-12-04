@@ -91,6 +91,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponseDto getUser(String username) {
+
+        Optional<User> optionalUser = userRepository.findByCredentials_UsernameAndDeletedFalse(username);
+        
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("No User found with Username: " + username);
+
+        }
+        
+        return userMapper.entityToResponseDto(optionalUser.get());
+    }
+
+    @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
 
         if (userRequestDto.getCredentials() == null

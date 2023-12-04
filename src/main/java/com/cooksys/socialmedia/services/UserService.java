@@ -14,6 +14,8 @@ public interface UserService {
 
     UserResponseDto deleteUser(String username, CredentialsDto credentialsDto);
 
+    UserResponseDto getUser(String username);
+
     UserResponseDto createUser(UserRequestDto userRequestDto);
 
     void unfollowUser(String username, CredentialsDto credentialsDto);
