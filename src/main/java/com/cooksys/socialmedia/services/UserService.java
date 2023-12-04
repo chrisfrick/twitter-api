@@ -18,4 +18,6 @@ public interface UserService {
 
     UserResponseDto createUser(UserRequestDto userRequestDto);
 
+    void unfollowUser(String username, CredentialsDto credentialsDto);
+  
 }
