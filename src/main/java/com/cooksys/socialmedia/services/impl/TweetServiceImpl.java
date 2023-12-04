@@ -198,8 +198,8 @@ public class TweetServiceImpl implements TweetService {
         
         return hashtagMapper.hashtagEntitiestoDtos(hashtags);
 
-        Tweet tweetToGet = getNotDeletedTweet(id);
-        return tweetMapper.entityToTweetResponseDto(tweetToGet);
+//        Tweet tweetToGet = getNotDeletedTweet(id);
+//        return tweetMapper.entityToTweetResponseDto(tweetToGet);
     }
 
     private void getAllNotDeletedReplies(Tweet target, List<Tweet> allReplies) {
