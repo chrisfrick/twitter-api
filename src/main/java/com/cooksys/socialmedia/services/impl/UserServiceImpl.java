@@ -224,13 +224,11 @@ public class UserServiceImpl implements UserService {
         }
         User userWithTweets = optionalUser.get();
 
-
         List<Tweet> tweets = tweetRepository
             .findByAuthorAndDeletedOrderByPostedDesc(userWithTweets, false);
 
         return tweetMapper.entitiesToResponseDtos(tweets);
     }
-
 
     @Override
     public List<TweetResponseDto> getUserFeed(String username) {
@@ -249,9 +247,41 @@ public class UserServiceImpl implements UserService {
             .findByAuthorOrAuthorInAndDeletedOrderByPostedDesc(userWithFeed,
                 userWithFeed.getFollowing(), false);
 
-        List<Tweet> tweets = tweetRepository.findByAuthorAndDeletedOrderByPostedDesc(userWithTweets, false);
-
         return tweetMapper.entitiesToResponseDtos(tweets);
+    }
+
+
+    @Override
+    public List<TweetResponseDto> getUserMentions(String username) {
+
+        Optional<User> optionalUser = userRepository
+                .findByCredentials_UsernameAndDeletedFalse(username);
+
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("No User found with Username: "
+                    + username);
+
+        }
+        User userMentioned = optionalUser.get();
+
+        List<Tweet> tweets = tweetRepository.findAllByDeletedFalseOrderByPostedDesc();
+        List<Tweet> tweetsWhereUserMentioned = new ArrayList<Tweet>();
+
+        for (Tweet tweet : tweets) {
+
+            Optional<String> optionalContent = Optional.ofNullable(tweet.getContent());
+            if (!(optionalContent.isEmpty())) {
+
+                String content = tweet.getContent();
+
+                if (content.contains("@" + username)) {
+                    tweetsWhereUserMentioned.add(tweet);
+                }
+            }
+        }
+
+        return tweetMapper.entitiesToResponseDtos(tweetsWhereUserMentioned);
+
     }
 
     @Override
@@ -275,6 +305,5 @@ public class UserServiceImpl implements UserService {
     private User getUserByUsername(String username) {
         return userRepository.findByDeletedFalseAndCredentials_UsernameIgnoreCase(username)
                 .orElseThrow(() -> new NotFoundException("No followable user found with username: " + username));
-
     }
 }
