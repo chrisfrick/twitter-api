@@ -306,28 +306,45 @@ public class UserServiceImpl implements UserService {
     public void unfollowUser(String username, CredentialsDto credentialsDto) {
         User follower = getUserByCredentials(credentialsDto);
         User following = getUserByUsername(username);
-
         if (!follower.getFollowing().contains(following)) {
             throw new NotFoundException("No following relationship found");
         }
 
         follower.getFollowing().remove(following);
+        following.getFollowers().remove(follower);
         userRepository.saveAndFlush(follower);
+        userRepository.saveAndFlush(following);
     }
 
 
     private User getUserByCredentials(CredentialsDto credentialsDto) {
-        return userRepository.findByCredentials(credentialsMapper.dtoToEntity(
-            credentialsDto)).orElseThrow(() -> new NotFoundException(
-                "No user found with the provided credentials"));
+//        return userRepository.findByCredentials(credentialsMapper.dtoToEntity(
+//            credentialsDto)).orElseThrow(() -> new NotFoundException(
+//                "No user found with the provided credentials"));
+        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
+        Optional<User> optionalUserWithCredentials = userRepository.findByCredentials(credentials);
+
+        if (optionalUserWithCredentials.isEmpty()) {
+            throw new NotFoundException("No User found with Credentials: "
+                + credentials);
+        }
+
+        return optionalUserWithCredentials.get();
     }
 
 
     private User getUserByUsername(String username) {
-        return userRepository
-            .findByDeletedFalseAndCredentials_UsernameIgnoreCase(username)
-            .orElseThrow(() -> new NotFoundException(
-                "No followable user found with username: " + username));
+//        return userRepository
+//            .findByDeletedFalseAndCredentials_UsernameIgnoreCase(username)
+//            .orElseThrow(() -> new NotFoundException(
+//                "No followable user found with username: " + username));
+        Optional<User> optionalUser = userRepository.findByCredentials_UsernameAndDeletedFalse(username);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("No User found with username: "
+                + username);
+        }
+        return optionalUser.get();
+
     }
 
 
