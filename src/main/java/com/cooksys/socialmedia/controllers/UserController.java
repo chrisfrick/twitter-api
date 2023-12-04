@@ -83,7 +83,7 @@ public class UserController {
     }
     
     @PostMapping("/@{username}/follow")
-    public Object followUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
-        return userService.followUser(username, credentialsDto);
+    public void followUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
+        userService.followUser(username, credentialsDto);
     }
 }

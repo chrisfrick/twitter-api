@@ -291,7 +291,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Object followUser(String username, CredentialsDto credentialsDto) {
+    public void followUser(String username, CredentialsDto credentialsDto) {
 
         Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
         Optional<User> optionalUserWithCredentials = userRepository.findByCredentials_UsernameAndDeletedFalse(credentials.getUsername());
@@ -323,7 +323,7 @@ public class UserServiceImpl implements UserService {
         userRepository.saveAndFlush(userToFollow);
         
         //End point says to return no data on success. Maybe there's a better way to do that?
-        return null;
+        //return null;
         
         
     }
