@@ -7,7 +7,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -23,6 +22,7 @@ public class Tweet {
     private User author;
 
     @CreationTimestamp
+    @Column(nullable = false)
     private Timestamp posted;
 
     private boolean deleted;
