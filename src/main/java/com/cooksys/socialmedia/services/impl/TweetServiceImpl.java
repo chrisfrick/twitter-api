@@ -191,7 +191,7 @@ public class TweetServiceImpl implements TweetService {
     public List<HashtagDto> getTweetTags(Long id) {
 
         Tweet tweetWithTags = getNotDeletedTweet(id);
-        if (tweetWithTags.isDeleted() == true) {
+        if (tweetWithTags.isDeleted()) {
             throw new NotAuthorizedException("Tweet has been deleted");
         }
 
@@ -277,11 +277,11 @@ public class TweetServiceImpl implements TweetService {
 
         List<Tweet> afterContext = new ArrayList<>();
         getAllNotDeletedReplies(target, afterContext);
-        Collections.sort(afterContext, (tweet1, tweet2) -> tweet1.getPosted().compareTo(tweet2.getPosted()));
+        afterContext.sort((tweet1, tweet2) -> tweet1.getPosted().compareTo(tweet2.getPosted()));
 
         List<Tweet> beforeContext = new ArrayList<>();
         getAllNotDeletedInReplyToTweets(target, beforeContext);
-        Collections.sort(beforeContext, (tweet1, tweet2) -> tweet1.getPosted().compareTo(tweet2.getPosted()));
+        beforeContext.sort((tweet1, tweet2) -> tweet1.getPosted().compareTo(tweet2.getPosted()));
 
         ContextDto context = new ContextDto();
         context.setTarget(tweetMapper.entityToTweetResponseDto(target));
