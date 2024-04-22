@@ -3,7 +3,7 @@ Social Media API
 
 ## Overview
 
-For this assessment, you are tasked with implementing a RESTful API using Spring Boot, JPA, and Postgresql. Specifically, you will be implementing an API that exposes operations for social media data that resembles the conceptual model of Twitter.
+For this project, you are tasked with implementing a RESTful API using Spring Boot, JPA, and Postgresql. Specifically, you will be implementing an API that exposes operations for social media data that resembles the conceptual model of Twitter.
 
 You will implement this API from scratch, working from a series of endpoint specifications (found at the end of this document) to develop a mental model of the data. You will develop a suitable database schema and write Spring services and controllers to handle requests, perform validation and business logic, and to transform data between the API and database models.
 
